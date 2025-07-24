@@ -1,0 +1,7 @@
+{
+  "name": "smart-elderly-care",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter=staff-app dev"
+  }
+}
