@@ -27,9 +27,7 @@ export const ElderlyInfoCard: React.FC<ElderlyInfoCardProps> = ({ elderly }) => 
 
   return (
     <div style={cardStyle}>
-      <div style={nameStyle}>{elderly.name}</div>
-      <div>身份证号: {elderly.id_card}</div>
-      <div>老人ID: {elderly.elderly_id}</div>
+      <div style={nameStyle}>{elderly.Name}</div>
     </div>
   );
 };
