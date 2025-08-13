@@ -1,35 +1,49 @@
-import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { LoginPage } from './pages/Login/LoginPage';
 import './App.css';
-// 从共享的 api-client 包导入API函数
-import { fetchElderlyInfoById } from '@smart-elderly-care/api-client';
-// 从共享的 types 包导入类型
-import type { ElderlyInfo } from '@smart-elderly-care/types';
-// 从共享的 ui 包导入UI组件
-import { ElderlyInfoCard } from '@smart-elderly-care/ui';
+import React,{JSX} from 'react';
 
-function App() {
-  const [elderlyData, setElderlyData] = useState<ElderlyInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // 组件加载时，调用API获取数据
-    fetchElderlyInfoById('elderly-001').then(data => {
-      setElderlyData(data);
-      setLoading(false);
-    });
-  }, []);
+// 这是一个临时的Dashboard页面，用于登录后跳转
+function Dashboard() {
+  // 尝试从localStorage获取用户信息
+  const userString = localStorage.getItem('loggedInUser');
+  if (!userString) {
+    // 如果没有用户信息，重定向回登录页
+    return <Navigate to="/login" />;
+  }
+  const user = JSON.parse(userString);
 
   return (
-    <>
-      <h1>智慧养老系统 - 员工端</h1>
-      {loading ? (
-        <p>正在加载老人信息...</p>
-      ) : elderlyData ? (
-        <ElderlyInfoCard elderly={elderlyData} />
-      ) : (
-        <p>未找到老人信息</p>
-      )}
-    </>
+    <div>
+      <h1>欢迎, {user.name}!</h1>
+      <p>你的职位是: {user.position}</p>
+      <p>员工ID: {user.staffId}</p>
+      {/* 在这里构建你的主界面 */}
+    </div>
+  );
+}
+
+// 这是一个用于检查登录状态的路由守卫组件
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+    const user = localStorage.getItem('loggedInUser');
+    return user ? children : <Navigate to="/login" />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route 
+          path="/dashboard" 
+          element={
+              <ProtectedRoute>
+                  <Dashboard />
+              </ProtectedRoute>
+          } 
+      />
+      {/* 默认路由，如果访问根路径，也重定向到登录页 */}
+      <Route path="/" element={<Navigate to="/login" />} />
+    </Routes>
   );
 }
 

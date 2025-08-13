@@ -25,14 +25,19 @@ export interface ElderlyInfo {
 // 文件来源: StaffInfo.cs
 // Note: Based on STAFFINFO class
 export interface StaffInfo {
-  STAFF_ID: number; // Corresponds to decimal
-  NAME: string;
-  GENDER: string;
-  POSITION: string;
-  CONTACT_PHONE: string;
-  EMAIL: string;
-  HIRE_DATE?: string; // Corresponds to DateTime?
-  SALARY?: number; // Corresponds to decimal?
+  staffId: number;
+  name: string;
+  position: string;
+  contactPhone: string;
+  skillLevel: string;
+  workSchedule: string;
+  
+  // 我们暂时保留这些，即使当前API没返回，以备后用
+  // 但要注意，在代码中使用它们之前要先判断是否存在
+  gender?: string;
+  email?: string;
+  hireDate?: string; 
+  salary?: number; 
   SKILL_LEVEL: string;
   WORK_SCHEDULE: string;
   // Navigation properties are kept for completeness
