@@ -8,6 +8,11 @@ import { NursingPlanPage } from './pages/Supervisor/NursingPlanPage.tsx';
 import { OperationsPage } from './pages/Supervisor/OperationsPage.tsx';
 import { DisinfectionReportPage } from './pages/Supervisor/DisinfectionReportPage';
 
+// ↓↓↓↓ 导入我们为护士端新建的组件 ↓↓↓↓
+import { NurseLayout } from './pages/Nurse/NurseLayout.tsx'; // 假设 NurseLayout 在这个路径
+import { NurseDashboard } from './pages/Nurse/NurseDashboard.tsx';
+import { ElderlyManagementPage } from './pages/Nurse/ElderlyManagementPage.tsx';
+
 // --- 创建临时的占位页面组件 ---
 
 // 通用的欢迎组件，用于显示用户信息和登出
@@ -69,6 +74,20 @@ function App() {
         path="/doctor" 
         element={<ProtectedRoute><WelcomePage role="医生" /></ProtectedRoute>} 
       />
+
+      {/* ↓↓↓↓ 我们在这里添加护士端的路由规则 ↓↓↓↓ */}
+      <Route path="/nurse" element={<NurseLayout />}>
+        {/* index 路由，访问 /nurse 时默认显示 */}
+        <Route index element={<NurseDashboard />} />
+        
+        {/* 老人管理页面的路由 */}
+        <Route path="elderly-management" element={<ElderlyManagementPage />} />
+        
+        {/* 老人详情页的动态路由，:elderlyId 是一个占位符 */}
+        {/* <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} /> */}
+        
+        {/* 其他护士子路由可以继续在这里添加... */}
+      </Route>
 
       {/* 普通员工界面路由 */}
       <Route 

@@ -51,12 +51,13 @@ export function LoginPage() {
           navigate('/supervisor');
         } else if (position === 'Doctor') {
           navigate('/doctor');
+        } else if (position === 'Nurse') {
+          navigate('/nurse');
         } else {
           // 其他所有职位都跳转到这个默认的员工界面
           navigate('/staff');
         }
-        // ---------------------------------
-
+       
       } else {
         setError('员工ID不存在或不匹配');
       }

@@ -2,24 +2,14 @@
 
 // 文件来源: ElderlyInfo.cs
 export interface ElderlyInfo {
-  ElderlyId: number;
-  Name: string;
-  Gender: string;
-  BirthDate?: string; // Corresponds to DateTime?
-  IdCardNumber: string;
-  ContactPhone: string;
-  Address: string;
-  EmergencyContact: string;
-  // Navigation properties as arrays of their respective types
-  Families: FamilyInfo[];
-  HealthMonitorings: HealthMonitoring[];
-  HealthAssessmentReports: HealthAssessmentReport[];
-  MedicalOrders: MedicalOrder[];
-  NursingPlans: NursingPlan[];
-  FeeSettlements: FeeSettlement[];
-  ActivityParticipations: ActivityParticipation[];
-  DietRecommendations: DietRecommendation[];
-  EmergencySOSCalls: EmergencySOS[];
+  elderlyId: number;
+  name: string;
+  gender: string;
+  birthDate?: string;
+  idCardNumber: string;
+  contactPhone: string;
+  address: string;
+  emergencyContact: string;
 }
 
 // 文件来源: StaffInfo.cs
@@ -55,35 +45,32 @@ export interface StaffInfo {
 
 // 文件来源: FamilyInfo.cs
 export interface FamilyInfo {
-  FamilyId: number;
-  ElderlyId: number;
-  Name: string;
-  Relationship: string;
-  ContactPhone: string;
-  ContactEmail: string;
-  Address: string;
-  IsPrimaryContact: string; // 'Y' or 'N'
+  // 注意：后端返回的 familyInfos 里没有 familyId 和 elderlyId
+  name: string;
+  relationship: string;
+  contactPhone: string;
+  contactEmail: string;
+  address: string;
+  isPrimaryContact: string; // 'Y' or 'N'
 }
 
 // 文件来源: HealthMonitoring.cs
 export interface HealthMonitoring {
-  MonitoringId: number;
-  ElderlyId: number;
-  MonitoringDate: string; // Corresponds to DateTime
-  HeartRate?: number;
-  BloodPressure?: string;
-  OxygenLevel?: number; // Corresponds to float?
-  Temperature?: number; // Corresponds to float?
-  Status: string;
+  monitoringDate: string;
+  heartRate: number;
+  bloodPressure: string;
+  oxygenLevel: number;
+  temperature: number;
+  status: string;
 }
 
 // 文件来源: MedicalOrder.cs
 export interface MedicalOrder {
-  order_id: number;
-  elderly_id: number;
-  staff_id: number;
-  medicine_id: number;
-  order_date: string; // Corresponds to DateTime
+  orderId: number;
+  elderlyId: number;
+  orderDate: string;
+  staffId: number;
+  medicineId: number;
   dosage: string;
   frequency: string;
   duration: string;
@@ -104,17 +91,15 @@ export interface NursingPlan {
 
 // 文件来源: FeeSettlement.cs
 export interface FeeSettlement {
-  settlement_id: number;
-  elderly_id: number;
-  total_amount: number; // Corresponds to decimal
-  insurance_amount: number; // Corresponds to decimal
-  personal_payment: number; // Corresponds to decimal
-  settlement_date: string; // Corresponds to DateTime
-  payment_status: string;
-  payment_method: string;
-  staff_id: number;
-  NursingPlans?: NursingPlan[];
-  FeeDetails?: FeeDetail[];
+  settlementId: number;
+  elderlyId: number;
+  totalAmount: number;
+  insuranceAmount: number;
+  personalPayment: number;
+  settlementDate: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  staffId: number;
 }
 
 // 文件来源: FeeDetail.cs
@@ -132,14 +117,14 @@ export interface FeeDetail {
 
 // 文件来源: HealthAssessmentReport.cs
 export interface HealthAssessmentReport {
-  AssessmentId: number;
-  ElderlyId: number;
-  AssessmentDate: string; // Corresponds to DateTime
-  PhysicalHealthFunction: number;
-  PsychologicalFunction: number;
-  CognitiveFunction: number;
-  HealthGrade: string;
+  // 注意：后端返回的名字是 healthAssessments
+  assessmentDate: string;
+  physicalHealthFunction: number;
+  psychologicalFunction: number;
+  cognitiveFunction: number;
+  healthGrade: string;
 }
+
 
 // 文件来源: ActivitySchedule.cs
 export interface ActivitySchedule {
@@ -155,22 +140,22 @@ export interface ActivitySchedule {
 
 // 文件来源: ActivityParticipation.cs
 export interface ActivityParticipation {
-  participation_id: number;
-  activity_id: number;
-  elderly_id: number;
+  participationId: number;
+  activityId: number;
+  elderlyId: number;
   status: string;
-  registration_time: string; // Corresponds to DateTime
-  check_in_time?: string; // Corresponds to DateTime?
+  registrationTime: string;
+  checkInTime?: string;
   feedback?: string;
 }
 
 // 文件来源: DietRecommendation.cs
 export interface DietRecommendation {
-  RecommendationId: number;
-  ElderlyId: number;
-  RecommendationDate: string; // Corresponds to DateTime
-  RecommendedFood: string;
-  ExecutionStatus: string;
+  recommendationId: number;
+  elderlyId: number;
+  recommendationDate: string;
+  recommendedFood: string;
+  executionStatus: string;
 }
 
 // 文件来源: EmergencySOS.cs
@@ -370,4 +355,29 @@ export interface DisinfectionReportData {
   byArea: Record<string, number>;
   byStaff: Record<string, number>;
   byMethod: Record<string, number>;
+}
+
+export interface ElderlyProfile {
+  elderlyInfo: ElderlyInfo;
+  familyInfos: FamilyInfo[];
+  healthMonitorings: HealthMonitoring[];
+  healthAssessments: HealthAssessmentReport[];
+  medicalOrders: MedicalOrder[];
+  nursingPlans: NursingPlan[];
+  feeSettlements: FeeSettlement[];
+  activityParticipations: ActivityParticipation[];
+}
+
+// ↓↓↓↓ 新增 SOS 事件的类型接口 ↓↓↓↓
+export interface EmergencySosEvent {
+  calL_ID: number;           // 修正
+  elderlY_ID: number;        // 修正
+  calL_TIME: string;
+  calL_TYPE: string;
+  rooM_ID: number;
+  responsE_TIME: string | null;
+  responsE_STAFF_ID: number | null;
+  folloW_UP_REQUIRED: boolean;
+  calL_STATUS: 'Pending' | 'InProgress' | 'Completed' | '处理中' | '已完成'; // 修正，并加入中文状态
+  handlinG_RESULT: string;
 }

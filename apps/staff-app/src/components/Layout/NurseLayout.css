@@ -1,0 +1,74 @@
+/* 这里直接使用你提供的 CSS，为了区分，我把类名从 supervisor-layout 改为 nurse-layout */
+.nurse-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #001529;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+
+.sidebar-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.sidebar-header p {
+  margin: 8px 0 0;
+  color: #a0aec0;
+}
+
+.sidebar-nav {
+  flex-grow: 1;
+  margin-top: 16px;
+}
+
+/* 注意：我们将使用 NavLink 来处理激活样式 */
+.sidebar-nav a {
+  display: block;
+  color: #a0aec0;
+  text-decoration: none;
+  padding: 12px 24px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-nav a:hover {
+  background-color: #1f2937;
+  color: white;
+}
+
+.sidebar-nav a.active {
+  background-color: #1890ff;
+  color: white;
+}
+
+.sidebar-footer {
+  padding: 16px 24px;
+}
+
+.sidebar-footer button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}

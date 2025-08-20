@@ -13,15 +13,29 @@ export default defineConfig({
         // 正确的重写规则！把 '/api-staff' 替换成 '/api'
         rewrite: (path) => path.replace(/^\/api-staff/, '/api'), 
       },
+      // ↓↓↓↓ 新增这条规则，处理所有 SOS 请求 ↓↓↓↓
+      '/api/EmergencySOS': {
+        target: 'http://47.96.238.102:5000',
+        changeOrigin: true,
+      },
 
-      // 规则二、三、四... 也需要根据各自后端的实际路径进行调整
-      // 假设其他服务的后端路径也都是 /api/... 开头
-      '/api-room': {
+      // ↓↓↓↓ 规则二：我们新加的，所有老人/登记/饮食相关的请求，都发往 7000 端口 ↓↓↓↓
+      '/api/CheckIn': {
         target: 'http://47.96.238.102:7000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-room/, '/api'),
       },
-      
+      '/api/DietRecommendation': {
+        target: 'http://47.96.238.102:7000',
+        changeOrigin: true,
+      },
+      '/api/ElderlyRecord': {
+        target: 'http://47.96.238.102:7000',
+        changeOrigin: true,
+      },
+      '/api/family': {
+        target: 'http://47.96.238.102:7000',
+        changeOrigin: true,
+      },
       '/api-medical': {
         target: 'http://47.96.238.102:9006',
         changeOrigin: true,
