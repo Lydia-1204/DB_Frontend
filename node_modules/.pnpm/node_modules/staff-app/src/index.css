@@ -1,3 +1,20 @@
+/*
+  CSS Reset: 确保根元素铺满整个视口，
+  并移除浏览器默认的内外边距。
+*/
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* 这是一个好习惯，让宽度计算更直观 */
+}
+
+/* 确保所有元素的 box-sizing 行为一致 */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

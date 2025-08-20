@@ -1,0 +1,235 @@
+/*
+ * 视觉风格完全参考 StaffManagementPage.module.css 以确保一致性
+ */
+
+.container {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* 基础按钮样式 */
+.button {
+  padding: 8px 16px;
+  background-color: #1890ff; /* 默认为蓝色 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.button:hover {
+  opacity: 0.8;
+}
+
+/* 特殊颜色按钮 */
+.specialButton {
+    background-color: #faad14; /* 橙色用于特殊功能 */
+}
+
+.editBtn {
+  background-color: #52c41a; /* 绿色 */
+}
+
+.deleteBtn {
+  background-color: #ff4d4f; /* 红色 */
+}
+
+.cancelBtn {
+  background-color: #f0f0f0; /* 灰色 */
+  color: #333;
+  border: 1px solid #d9d9d9;
+}
+
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px;
+  text-align: left;
+}
+
+.table th {
+  font-weight: 500;
+  background-color: #fafafa;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.error {
+  color: #ff4d4f;
+  padding: 20px;
+  background-color: #fff1f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+}
+
+/* Modal Styles */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90%;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroupFull {
+    grid-column: 1 / -1; /* 占满整行 */
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.formGroup input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.reportForm {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 24px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.reportResultArea {
+  margin-top: 24px;
+}
+
+.prompt {
+    text-align: center;
+    color: #888;
+    font-size: 1.1rem;
+    padding: 40px;
+}
+
+.reportContainer h2 {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+}
+
+.reportSummary {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-radius: 4px;
+}
+
+.reportGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.reportCard {
+  background-color: #fafafa;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.reportCard h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.reportCard ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reportCard li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.reportCard li:last-child {
+  border-bottom: none;
+}

@@ -90,16 +90,16 @@ export interface MedicalOrder {
 }
 
 // 文件来源: NursingPlan.cs
+
 export interface NursingPlan {
-  plan_id: number;
-  elderly_id: number;
-  staff_id: number;
-  plan_start_date: string; // Corresponds to DateTime
-  plan_end_date: string; // Corresponds to DateTime
-  care_type: string;
-  priority: string;
-  evaluation_status: string;
-  FeeSettlements?: FeeSettlement[];
+  planId: number;
+  elderlyId: number;
+  staffId: number;
+  planStartDate: string; // ISO 8601 format string, e.g., "2025-08-19T15:46:40"
+  planEndDate: string;
+  careType: 'Normal' | 'Emergency'; // Use a union type for specific values
+  priority: 'Basic' | 'Normal' | 'High';
+  evaluationStatus: string; // e.g., "Scheduled"
 }
 
 // 文件来源: FeeSettlement.cs
@@ -210,6 +210,9 @@ export interface DisinfectionRecord {
   STAFF_ID: number; // Corresponds to decimal
   METHODS: string;
 }
+// ... 其他接口
+
+
 
 // 文件来源: OperationLog.cs
 export interface OperationLog {
@@ -359,4 +362,12 @@ export interface StaffLocation {
   STAFF_ID: number; // Corresponds to decimal
   FLOOR?: number; // Corresponds to decimal?
   UPDATE_TIME: string; // Corresponds to DateTime
+}
+
+export interface DisinfectionReportData {
+  month: string;
+  totalDisinfections: number;
+  byArea: Record<string, number>;
+  byStaff: Record<string, number>;
+  byMethod: Record<string, number>;
 }
