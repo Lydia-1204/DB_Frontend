@@ -381,3 +381,247 @@ export interface EmergencySosEvent {
   calL_STATUS: 'Pending' | 'InProgress' | 'Completed' | '处理中' | '已完成'; // 修正，并加入中文状态
   handlinG_RESULT: string;
 }
+
+// 用于登记新老人的数据结构
+export interface NewElderlyRegistration {
+  elderly: {
+    name: string;
+    gender: string;
+    birthDate: string;
+    idCardNumber: string;
+    contactPhone: string;
+    address: string;
+    emergencyContact: string;
+  };
+  assessment: {
+    assessmentDate: string;
+    physicalHealthFunction: number;
+    psychologicalFunction: number;
+    cognitiveFunction: number;
+    healthGrade: string;
+  };
+  monitoring: {
+    monitoringDate: string;
+    heartRate: number;
+    bloodPressure: string;
+    oxygenLevel: number;
+    temperature: number;
+    status: string;
+  };
+  families: {
+    name: string;
+    relationship: string;
+    contactPhone: string;
+    contactEmail: string;
+    address: string;
+    isPrimaryContact: string; // 'Y' or 'N'
+  }[];
+}
+
+// 开具新医嘱的请求体
+export interface NewMedicalOrderPayload {
+  orderId: number; // <--- 在这里添加这一行！
+  elderlyId: number;
+  staffId: number;
+  medicineId: number;
+  orderDate: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+}
+
+// 提交新的健康监测记录的请求体
+export interface NewHealthMonitoringRecordPayload {
+  elderlyId: number;
+  heartRate: number;
+  bloodPressure: string;
+  oxygenLevel: number;
+  temperature: number;
+  measurementTime: string; // ISO 格式的日期字符串
+}
+
+export interface Device {
+  deviceId: number;
+  deviceName: string;
+  deviceType: string;
+  installationDate: string; // ISO Date String
+  status: string;
+  roomId: number | null;
+  description: string | null;
+  location: string;
+  lastMaintenanceDate: string | null; // ISO Date String
+  createdAt: string; // ISO Date String
+  updatedAt: string; // ISO Date String
+}
+
+export interface DeviceUpdateDto {
+  deviceName: string;
+  deviceType: string;
+  installationDate: string;
+  status: string;
+  roomId?: number;
+  description?: string;
+  location: string;
+  lastMaintenanceDate?: string;
+}
+
+export interface DeviceStats {
+  "总设备数": number;
+  "正常设备": number;
+  "故障设备": number;
+  "维护中设备": number;
+  "设备类型分布": Record<string, number>;
+  "状态分布": Record<string, number>;
+  "已分配房间设备": number;
+  "未分配房间设备": number;
+}
+
+// 用于描述带有分页的API响应的通用接口
+export interface PaginatedResponse<T> {
+  success: boolean;
+  message: string;
+  data: T[];
+  totalCount: number;
+}
+
+// 文件来源: 房间管理API文档
+
+// 注意：我们复用之前已经定义好的 Device 接口
+// import type { Device } from './'; // 如果 Device 在同一个文件，则无需导入
+
+export interface Room {
+  roomId: number;
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+  status: string;
+  rate: number;
+  bedType: string;
+  floor: number;
+  description: string | null;
+  createdAt: string; // ISO Date String
+  updatedAt: string; // ISO Date String
+  devices: Device[]; // 房间内的设备列表
+}
+
+export interface RoomDto {
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+  status: string;
+  rate: number;
+  bedType: string;
+  floor: number;
+}
+
+export interface RoomApiResponse {
+  success: boolean;
+  message: string;
+  data: Room[];
+  totalCount: number;
+}
+
+// --- 请找到并用下面的版本替换你已有的 RoomStatsResponse ---
+
+// 为 roomTypeStats 和 floorStats 数组中的对象创建类型
+export interface RoomTypeStat {
+  roomType: string;
+  count: number;
+  availableCount: number;
+}
+
+export interface FloorStat {
+  floor: number;
+  count: number;
+  availableCount: number;
+}
+
+// 为 statistics.data 创建一个详细的类型
+export interface RoomStatsData {
+  totalRooms: number;
+  availableRooms: number;
+  occupiedRooms: number;
+  maintenanceRooms: number;
+  roomTypeStats: RoomTypeStat[];
+  floorStats: FloorStat[];
+  averageRate: number;
+}
+
+// 更新 RoomStatsResponse，使其 data 字段使用新的类型
+export interface RoomStatsResponse {
+    success: boolean;
+    message: string;
+    data: RoomStatsData | null; // data 不再是 string，而是一个对象
+    totalCount: number | null;
+}
+
+// --- 在文件末尾新增以下两个接口 ---
+
+// 用于获取单个房间详情的 API 响应类型
+export interface SingleRoomApiResponse {
+  success: boolean;
+  message: string;
+  data: Room; // data 是单个 Room 对象
+  totalCount: number | null;
+}
+
+// 用于 POST/PUT/DELETE 操作的通用响应类型
+export interface MutationApiResponse {
+  success: boolean;
+  message: string;
+  data: any | null;
+  totalCount: number | null;
+}
+
+
+export interface Activity {
+  activityId: number;
+  activityName: string;
+  location: string;
+  startTime: string; // ISO 日期时间字符串
+  staffId: number;
+}
+
+export interface DisinfectionRecord {
+  disinfectionId?: number; // 设为可选，因为新增时不需要提交
+  area: string;
+  disinfectionTime: string;
+  staffId: number;
+  methods: string;
+}
+
+export interface FaultReport {
+  deviceId: number;
+  deviceType: string;
+  faultStatus: string;
+  faultDescription: string;
+  reportTime: string;
+}
+
+// 系统公告的数据结构 (与你的 C# 模型对应)
+export interface SystemAnnouncement {
+  announcement_id: number;
+  announcement_date: string;
+  announcement_type: string;
+  announcement_content: string;
+  status: string;
+  audience: string;
+  created_by: number;
+  read_status: string;
+  comments: string;
+}
+
+// 更新：发布新公告的请求体
+export interface NewAnnouncementPayload {
+  content: string;
+  type: string;
+  audience: string; // 将是一个逗号分隔的字符串，例如 "员工,家属"
+  staffId: number;
+}
+
+// 更新：发表评论的请求体
+export interface NewCommentPayload {
+  comment: string;
+  commenterId: number;
+  commenterType: string; // 例如 "员工"
+}

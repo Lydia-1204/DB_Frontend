@@ -47,13 +47,17 @@ export function LoginPage() {
         // --- 核心修改：角色判断与跳转 ---
         const position = foundStaff.position;
 
-        if (position === 'manager') {
+        if (position === 'Supervisor') {
           navigate('/supervisor');
         } else if (position === 'Doctor') {
           navigate('/doctor');
         } else if (position === 'Nurse') {
           navigate('/nurse');
-        } else {
+        } else if(position=='Cleaner'){
+          navigate('/cleaner');
+        }else if(position=='维修人员'){
+          navigate('/maintenance');
+        }else  {
           // 其他所有职位都跳转到这个默认的员工界面
           navigate('/staff');
         }

@@ -1,0 +1,163 @@
+/* --- 整体布局 --- */
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+/* --- 统计卡片区域 --- */
+.statsContainer {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.statCard { text-align: center; }
+.statValue {
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.statValue.colorBlue { color: #1890ff; }
+.statValue.colorGreen { color: #52c41a; }
+.statValue.colorRed { color: #ff4d4f; }
+.statValue.colorYellow { color: #faad14; }
+.statTitle { font-size: 14px; color: #888; }
+.toggleStatsButton {
+  margin-top: 20px;
+  background: none;
+  border: none;
+  color: #1890ff;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- 【核心修改】详细统计信息的两列布局 --- */
+.detailedStats {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 强制两列布局 */
+  gap: 24px; /* 列之间的间距 */
+  align-items: flex-start; /* 顶部对齐 */
+}
+.distroGroup h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 16px;
+}
+/* 新增的列表样式，取代 <ul> */
+.distroList {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+.distroRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+.distroRow:last-child { border-bottom: none; }
+.distroKey { color: #555; }
+.distroValue { font-weight: 600; color: #333; }
+/* --- 结束核心修改 --- */
+
+/* --- 操作栏 (搜索和新增) --- */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 16px 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.searchGroup { display: flex; gap: 10px; }
+.searchInput {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  width: 250px;
+}
+.searchInput:focus { outline: none; border-color: #1890ff; }
+.searchButton {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.addButton {
+  padding: 8px 16px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* --- 表格 --- */
+.tableContainer {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 16px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.table th { font-weight: 500; background-color: #fafafa; color: #333; }
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+}
+.statusBadge.正常运行, .statusBadge.正常 { background-color: #52c41a; }
+.statusBadge.故障 { background-color: #ff4d4f; }
+.statusBadge.维护中 { background-color: #faad14; }
+.statusBadge.离线 { background-color: #bfbfbf; }
+.actions { display: flex; gap: 10px; }
+.actionButton { padding: 4px 12px; border-radius: 4px; cursor: pointer; background: none; border: 1px solid transparent; }
+.editButton { color: #1890ff; border-color: #1890ff; }
+.deleteButton { color: #ff4d4f; background-color: #fff1f0; border-color: #ffccc7; }
+
+/* --- 分页 --- */
+.pagination { display: flex; justify-content: flex-end; align-items: center; margin-top: 24px; }
+.pagination span { margin: 0 16px; font-size: 14px; }
+.pagination button { padding: 6px 12px; border: 1px solid #d9d9d9; background-color: #fff; border-radius: 4px; cursor: pointer; }
+.pagination button:disabled { color: #ccc; cursor: not-allowed; border-color: #f0f0f0; }
+
+/* --- 模态框 (Modal) 样式 --- */
+.modalBackdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modalContent { background-color: white; padding: 24px; border-radius: 8px; width: 500px; max-width: 90%; }
+.modalContent h2 { margin-top: 0; }
+.formGroup { margin-bottom: 16px; }
+.formGroup label { display: block; margin-bottom: 8px; font-weight: 500; }
+.formGroup input { width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; box-sizing: border-box; }
+.modalActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.modalActions button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+.saveButton { background-color: #1890ff; color: white; }
+.cancelButton { background-color: #f0f0f0; color: #555; }

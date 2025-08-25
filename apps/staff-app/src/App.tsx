@@ -2,18 +2,41 @@ import React,{JSX} from 'react'; // 确保导入 React 以支持 JSX
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoginPage } from './pages/Login/LoginPage.tsx';
 import type { StaffInfo } from '@smart-elderly-care/types';
+
+// 主管端组件
 import { SupervisorLayout } from './pages/Supervisor/SupervisorLayout.tsx';
 import { StaffManagementPage } from './pages/Supervisor/StaffManagementPage.tsx';
 import { NursingPlanPage } from './pages/Supervisor/NursingPlanPage.tsx';
 import { OperationsPage } from './pages/Supervisor/OperationsPage.tsx';
 import { DisinfectionReportPage } from './pages/Supervisor/DisinfectionReportPage';
+import { DeviceManagementPage } from './pages/Supervisor/DeviceManagementPage';
+import { RoomManagementPage } from './pages/Supervisor/RoomManagementPage';
+import { FeeSettlementPage } from './pages/Supervisor/FeeSettlementPage';
 
-// ↓↓↓↓ 导入我们为护士端新建的组件 ↓↓↓↓
+// 护士端组件
 import { NurseLayout } from './pages/Nurse/NurseLayout.tsx'; // 假设 NurseLayout 在这个路径
 import { NurseDashboard } from './pages/Nurse/NurseDashboard.tsx';
 import { ElderlyManagementPage } from './pages/Nurse/ElderlyManagementPage.tsx';
+import { ElderlyDetailPage } from './pages/Nurse/ElderlyDetailPage.tsx'; // <--- 导入我们即将创建的详情页组件
+import { DietManagementPage } from './pages/Nurse/DietManagementPage.tsx'; // <--- 导入新页面组件
+import { ActivitySchedulePage } from './pages/Nurse/ActivitySchedulePage.tsx'; // <--- 1. 导入新页面组件
+import { VisitorApprovalPage } from './pages/Nurse/VisitorApprovalPage.tsx'; // <--- 导入新页面组件
 
-// --- 创建临时的占位页面组件 ---
+
+// 医生端组件
+import { DoctorLayout } from './pages/Doctor/DoctorLayout'; 
+import { DoctorDashboard } from './pages/Doctor/DoctorDashboard';
+
+import { CleanerLayout } from './pages/Cleaner/CleanerLayout';
+import { CleanerDashboard } from './pages/Cleaner/CleanerDashboard';
+
+import { MaintenanceLayout } from './pages/Maintenance/MaintenanceLayout';
+import { MaintenanceDashboard } from './pages/Maintenance/MaintenanceDashboard';
+
+import { AnnouncementsPage } from './components/AnnouncementsPage';
+
+
+
 
 // 通用的欢迎组件，用于显示用户信息和登出
 function WelcomePage({ role }: { role: string }) {
@@ -67,26 +90,61 @@ function App() {
         <Route path="nursing-plans" element={<NursingPlanPage />} />
         <Route path="operations" element={<OperationsPage />} />
         <Route path="disinfection-reports" element={<DisinfectionReportPage />} />
+        {/* ↓↓↓↓ 在这里添加新的设备管理路由 ↓↓↓↓ */}
+        <Route path="devices" element={<DeviceManagementPage />} />
+        {/* ↓↓↓↓ 在这里添加新的房间管理路由 ↓↓↓↓ */}
+        <Route path="rooms" element={<RoomManagementPage />} />
+        {/* ↓↓↓↓ 2. 在这里为费用结算页面添加新的路由规则 ↓↓↓↓ */}
+        <Route path="fee-settlement" element={<FeeSettlementPage />} />
+        {/* ↓↓↓↓ 集成公告页，并传入角色 'supervisor' ↓↓↓↓ */}
+        <Route path="announcements" element={<AnnouncementsPage role="supervisor" />} />
       </Route>
       
-      {/* 医生界面路由 */}
-      <Route 
-        path="/doctor" 
-        element={<ProtectedRoute><WelcomePage role="医生" /></ProtectedRoute>} 
-      />
+      {/* --- 医生端路由 --- */}
+      <Route path="/doctor" element={<ProtectedRoute><DoctorLayout /></ProtectedRoute>}>
+        <Route index element={<DoctorDashboard />} />
+        {/* 老人管理列表页 (复用组件) */}
+        <Route path="elderly-management" element={<ElderlyManagementPage role="doctor" />} />
+        {/* ↓↓↓↓ 修正：为医生端也加上详情页路由！↓↓↓↓ */}
+        <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} />
+        {/* ↓↓↓↓ 集成公告页，并传入角色 'doctor' ↓↓↓↓ */}
+        <Route path="announcements" element={<AnnouncementsPage role="doctor" />} />
+      </Route>
 
       {/* ↓↓↓↓ 我们在这里添加护士端的路由规则 ↓↓↓↓ */}
-      <Route path="/nurse" element={<NurseLayout />}>
+      <Route path="/nurse" element={<ProtectedRoute><NurseLayout /></ProtectedRoute>}>
         {/* index 路由，访问 /nurse 时默认显示 */}
         <Route index element={<NurseDashboard />} />
         
-        {/* 老人管理页面的路由 */}
-        <Route path="elderly-management" element={<ElderlyManagementPage />} />
-        
-        {/* 老人详情页的动态路由，:elderlyId 是一个占位符 */}
-        {/* <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} /> */}
-        
+        {/* 老人管理列表页 */}
+        <Route path="elderly-management" element={<ElderlyManagementPage role="nurse" />} />
+        {/* ↓↓↓↓ 修正：将详情页路由加回来！↓↓↓↓ */}
+        <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} />
+  {/* ↓↓↓↓ 新增的饮食管理页面的路由 ↓↓↓↓ */}
+  <Route path="diet-management" element={<DietManagementPage />} />
+  <Route path="activity-schedule" element={<ActivitySchedulePage />} />
+  {/* ↓↓↓↓ 新增的访客审批页面的路由 ↓↓↓↓ */}
+  <Route path="visitor-approval" element={<VisitorApprovalPage />} />
+  {/* ↓↓↓↓ 集成公告页，并传入角色 'nurse' ↓↓↓↓ */}
+        <Route path="announcements" element={<AnnouncementsPage role="nurse" />} />
+
         {/* 其他护士子路由可以继续在这里添加... */}
+      </Route>
+
+     {/* ↓↓↓ 更新清洁工的路由规则 ↓↓↓ */}
+      <Route path="/cleaner" element={<ProtectedRoute><CleanerLayout /></ProtectedRoute>}>
+        {/* 访问 /cleaner 时，默认显示工作台 */}
+        <Route index element={<CleanerDashboard />} /> 
+        {/* ↓↓↓↓ 集成公告页，并传入角色 'cleaner' ↓↓↓↓ */}
+        <Route path="announcements" element={<AnnouncementsPage role="cleaner" />} />
+      </Route>
+
+      {/* ↓↓↓ 更新维修工的路由规则 ↓↓↓ */}
+      <Route path="/maintenance" element={<ProtectedRoute><MaintenanceLayout /></ProtectedRoute>}>
+        {/* 访问 /maintenance 时，默认显示工作台 */}
+        <Route index element={<MaintenanceDashboard />} />
+        {/* ↓↓↓↓ 集成公告页，并传入角色 'maintenance' ↓↓↓↓ */}
+        <Route path="announcements" element={<AnnouncementsPage role="maintenance" />} />
       </Route>
 
       {/* 普通员工界面路由 */}

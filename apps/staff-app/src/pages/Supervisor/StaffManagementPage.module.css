@@ -1,10 +1,10 @@
+/* --- 你提供的统一风格 --- */
 .container {
   background-color: white;
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -13,12 +13,7 @@
   padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
 }
-
-.header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
+.header h1 { margin: 0; font-size: 1.5rem; }
 .button {
   padding: 8px 16px;
   background-color: #1890ff;
@@ -29,118 +24,72 @@
   transition: opacity 0.3s;
   font-size: 14px;
 }
-
-.button:hover {
-  opacity: 0.8;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
+.button:hover { opacity: 0.8; }
+.table { width: 100%; border-collapse: collapse; }
 .table th, .table td {
   border-bottom: 1px solid #f0f0f0;
   padding: 16px;
   text-align: left;
 }
+.table th { font-weight: 500; background-color: #fafafa; }
+.actions { display: flex; gap: 10px; }
+.editBtn { background-color: #52c41a; }
+.deleteBtn { background-color: #ff4d4f; }
+.cancelBtn { background-color: #888; color: white; } /* 稍微调整取消按钮颜色 */
+.error { /* ... */ }
 
-.table th {
-  font-weight: 500;
-  background-color: #fafafa;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.editBtn {
-  background-color: #52c41a;
-}
-
-.deleteBtn {
-  background-color: #ff4d4f;
-}
-
-.cancelBtn {
-  background-color: #ccc;
-}
-
-.error {
-  color: #ff4d4f;
-  padding: 20px;
-  background-color: #fff1f0;
-  border: 1px solid #ffccc7;
-  border-radius: 4px;
-}
-
-/* Modal Styles */
+/* --- Modal Styles --- */
 .modalBackdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; justify-content: center; align-items: center;
   z-index: 1000;
 }
-
 .modalContent {
-  background-color: white;
-  padding: 24px;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
+  background-color: white; padding: 24px; border-radius: 8px;
+  width: 500px; max-width: 90%;
 }
-
-.modalContent h2 {
-  margin-top: 0;
-}
-
-.formGroup {
-  margin-bottom: 16px;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
+.modalContent h2 { margin-top: 0; }
+.formGroup { margin-bottom: 16px; }
+.formGroup label { display: block; margin-bottom: 8px; font-weight: 500; }
 .formGroup input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  width: 100%; padding: 8px; border: 1px solid #d9d9d9;
+  border-radius: 4px; box-sizing: border-box; /* 修复宽度问题 */
 }
-
 .modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  display: flex; justify-content: flex-end; gap: 10px;
   margin-top: 24px;
 }
 
-
-.scheduleContainer {
+/* --- 为新功能补充的样式 --- */
+.statsContainer {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+.statsGrid {
   display: grid;
-  grid-template-columns: 1fr auto 1fr 1fr auto 1fr; /* 灵活的网格布局 */
-  align-items: center;
-  gap: 8px; /* 控件之间的间距 */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
 }
-
-.scheduleContainer select,
-.scheduleContainer input[type="time"] {
-  padding: 8px;
-  border: 1px solid #d9d9d9;
+.toggleStatsButton {
+  margin-top: 16px;
+  background: none;
+  border: 1px solid #1890ff;
+  color: #1890ff;
+  padding: 6px 12px;
   border-radius: 4px;
-  width: 100%; /* 占满网格单元格 */
+  cursor: pointer;
 }
-
-.scheduleContainer span {
-  text-align: center; /* 分隔符居中 */
+.detailedStats {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
 }
+.distroChart h4 { margin-top: 0; }
+.distroChart ul { padding-left: 20px; margin: 0; }

@@ -38,8 +38,13 @@ export function NurseLayout() {
           {/* 使用 NavLink，当路径匹配时，它会自动添加 'active' class */}
           <NavLink to="/nurse" end>工作台</NavLink>
           <NavLink to="/nurse/elderly-management">老人档案管理</NavLink>
-          <NavLink to="/nurse/nursing-plan">护理计划</NavLink>
-          <NavLink to="/nurse/medical-orders">医嘱执行</NavLink>
+           {/* ↓↓↓↓ 在这里添加我们新的导航链接 ↓↓↓↓ */}
+          <NavLink to="/nurse/diet-management"> 饮食管理</NavLink>
+         
+          <NavLink to="/nurse/activity-schedule">活动安排</NavLink>
+          {/* ↓↓↓↓ 在这里添加我们新的导航链接 ↓↓↓↓ */}
+          <NavLink to="/nurse/visitor-approval">访客审批</NavLink>
+          <NavLink to="/nurse/announcements">系统公告</NavLink>
         </nav>
         <div className="sidebar-footer">
           <button onClick={handleLogout}>退出登录</button>

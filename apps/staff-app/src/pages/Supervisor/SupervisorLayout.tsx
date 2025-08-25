@@ -28,10 +28,18 @@ export function SupervisorLayout() {
         </div>
         <nav className="sidebar-nav">
           {/* NavLink 会在当前路由匹配时自动添加 'active' class */}
+          
           <NavLink to="/supervisor/staff">员工管理</NavLink>
           <NavLink to="/supervisor/nursing-plans">护理计划</NavLink>
           <NavLink to="/supervisor/disinfection-reports">消毒报告</NavLink>
+          <NavLink to="/supervisor/devices">设备管理</NavLink>
           <NavLink to="/supervisor/operations">运营与调度</NavLink>
+           {/* ↓↓↓↓ 在这里添加新的房间管理导航链接 ↓↓↓↓ */}
+          <NavLink to="/supervisor/rooms">房间管理</NavLink>
+          {/* ↓↓↓↓ 在这里添加新的费用结算导航链接 ↓↓↓↓ */}
+          <NavLink to="/supervisor/fee-settlement">费用结算</NavLink>
+          <NavLink to="/supervisor/announcements">公告栏</NavLink>
+
         </nav>
         <div className="sidebar-footer">
           <button onClick={handleLogout}>退出登录</button>
