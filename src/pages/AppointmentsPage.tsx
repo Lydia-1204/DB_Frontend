@@ -12,7 +12,7 @@ const AppointmentsPage: React.FC<Props> = ({ onBack, appointments }) => {
           <div className="page-header">
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <button onClick={onBack} className="back-button"><ArrowLeft className="w-6 h-6" /></button>
-              <h2 className="page-title">我的预约记录</h2>
+              <h2 className="page-title">预约记录</h2>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div className="header-icon"><FileText className="w-5 h-5" /></div>
@@ -31,24 +31,24 @@ const AppointmentsPage: React.FC<Props> = ({ onBack, appointments }) => {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {appointments.map((a, idx) => {
+        {appointments.map((a, idx) => {
                   const dateTime = a.visitTime ? a.visitTime.replace('T', ' ') : '-';
                   return (
-                    <div key={idx} className="content-section" style={{ position: 'relative' }}>
+          <div key={idx} className="content-section appointment-record" style={{ position: 'relative' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <h4 style={{ fontSize: 18, fontWeight: 600, color: '#1e3a8a', margin: 0 }}>{a.visitorName}</h4>
                           <span style={{ background: 'rgba(59,130,246,0.15)', color: '#1e3a8a', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>{a.visitType}</span>
                           <span style={{ background: 'rgba(148,163,184,0.2)', color: '#334155', padding: '2px 10px', borderRadius: 12, fontSize: 12 }}>{a.approvalStatus || '待批准'}</span>
                         </div>
-                        <span style={{ fontSize: 12, color: '#64748b' }}>预约ID: {a.registrationId}</span>
+                        <span style={{ fontSize: 12, color: '#64748b' }}>预约ID: <span className="record-value" style={{ fontSize: 'inherit' }}>{a.registrationId}</span></span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12, fontSize: 13, lineHeight: 1.5 }}>
-                        <div><strong style={{ color: '#475569' }}>老人ID: </strong>{a.elderlyId ?? '-'}</div>
-                        <div><strong style={{ color: '#475569' }}>预约时间: </strong>{dateTime}</div>
-                        <div><strong style={{ color: '#475569' }}>关系: </strong>{a.relationshipToElderly}</div>
+                        <div><strong style={{ color: '#475569' }}>老人ID: </strong><span className="record-value">{a.elderlyId ?? '-'}</span></div>
+                        <div><strong style={{ color: '#475569' }}>预约时间: </strong><span className="record-value">{dateTime}</span></div>
+                        <div><strong style={{ color: '#475569' }}>关系: </strong><span className="record-value">{a.relationshipToElderly}</span></div>
                       </div>
-                      {a.visitReason && <div style={{ marginTop: 10, fontSize: 13, color: '#475569' }}><strong style={{ color: '#334155' }}>探视原因: </strong>{a.visitReason}</div>}
+                      {a.visitReason && <div style={{ marginTop: 10, fontSize: 13, color: '#475569' }}><strong style={{ color: '#334155' }}>探视原因: </strong><span className="record-value">{a.visitReason}</span></div>}
                     </div>
                   );
                 })}

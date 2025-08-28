@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import type { Page, Appointment } from './types';
-import { fetchVisitorRegistrations, getLoggedVisitor, getResponsibleVisitorRegistrations, mapRegistrationDetailToAppointment } from './api';
+import { fetchVisitorRegistrations, /*getLoggedVisitor,*/ getResponsibleVisitorRegistrations, mapRegistrationDetailToAppointment } from './api';
 import type { VisitorLoginInfo } from './api';
 import HomePage from './pages/HomePage';
 import QueryPage from './pages/QueryPage';
@@ -15,11 +15,17 @@ import { RefreshCw } from 'lucide-react';
 const VisitorAppointmentSystem: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [visitor, setVisitor] = useState<VisitorLoginInfo | null>(() => getLoggedVisitor());
+  // 始终要求重新登录：不从 localStorage 自动恢复
+  const [visitor, setVisitor] = useState<VisitorLoginInfo | null>(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
   // 若需要全局加载状态，可在此引入; 当前未使用故省略
 
   // 加载初始数据
+  // 初次挂载时清理旧缓存，之后不再干扰登录后的 localStorage
+  useEffect(() => {
+    localStorage.removeItem('visitorInfo');
+  }, []);
+
   useEffect(() => {
     // 登录后才加载预约数据
     if (!visitor) return;
@@ -86,7 +92,7 @@ const VisitorAppointmentSystem: React.FC = () => {
 
   // 未登录 -> 仅显示登录页面
   if (!visitor) {
-    return <LoginForm onSuccess={() => { setVisitor(getLoggedVisitor()); }} />;
+  return <LoginForm onSuccess={() => { /* 登录成功后重新从 localStorage 读取 */ const raw = localStorage.getItem('visitorInfo'); if (raw) { try { setVisitor(JSON.parse(raw)); } catch {} } }} />;
   }
 
   return (

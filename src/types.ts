@@ -15,4 +15,4 @@ export type Page = 'home' | 'query' | 'batchAppointment' | 'individualAppointmen
 
 // 常量
 export const API_BASE_URL = 'http://47.96.238.102:9000';
-export const DEFAULT_ELDERLY_ID = 1;
+export const DEFAULT_ELDERLY_ID = 0;
