@@ -28,10 +28,15 @@ export const elderlyService = {
         throw new Error(`Failed to fetch nursing plans: ${res.status} ${res.statusText}`);
       }
       const data = await res.json();
-  if (!Array.isArray(data)) return [];
-  // 严格返回原始字段，不做映射/新增/过滤
-  console.debug('[NursingPlans][raw]', data);
-  return data;
+      if (!Array.isArray(data)) return [];
+      console.debug('[NursingPlans][raw]', data);
+      // 只保留 Pending(待确认) 与 Scheduled(待完成) 状态
+      const filtered = data.filter((p: any) => {
+        const s = (p?.evaluationStatus || '').toString();
+        return s === 'Pending' || s === 'Scheduled' || s === '待确认' || s === '待完成';
+      });
+      console.debug('[NursingPlans][filtered]', filtered);
+      return filtered;
     } catch (e) {
       console.error('Failed to fetch nursing plans:', e);
       return [];

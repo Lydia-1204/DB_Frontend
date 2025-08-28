@@ -25,7 +25,7 @@ const NursingPlanList: React.FC<Props> = ({ plans, loading, onCancelled }) => {
   };
   const mapEvaluation = (v?: string) => {
     if (!v) return '-';
-    const m: Record<string,string> = { Pending: '待确认', Scheduled: '待完成', Completed: '已完成' };
+    const m: Record<string,string> = { Unpaid: '待支付', Pending: '待确认', Scheduled: '待完成', Completed: '已完成' };
     return m[v] ?? v;
   };
 
@@ -52,7 +52,7 @@ const NursingPlanList: React.FC<Props> = ({ plans, loading, onCancelled }) => {
               </tr>
             </thead>
             <tbody className="bg-white">
-              {plans.map((p, index) => (
+              {plans.filter(p => ['Pending','Scheduled','待确认','待完成'].includes(p.evaluationStatus)).map((p, index) => (
                 <tr
                   key={p.planId}
                   className={`hover:bg-blue-50/70 border-b border-blue-200 ${index % 2 === 0 ? 'bg-blue-25' : 'bg-white'}`}
