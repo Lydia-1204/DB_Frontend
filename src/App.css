@@ -1,0 +1,454 @@
+/* App.css
+   作用：为系统提供全局样式，包括布局、按钮、动画等基础样式。
+   蓝白主题配色，网格设计布局
+*/
+#root {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-light);
+  border-radius: 16px;
+  /* 移除阴影，防止顶部导航投射阴影 */
+  box-shadow: none;
+}
+
+.app-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+  grid-template-columns: 260px 1fr;
+  }
+}
+
+.main-content {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.6rem;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+}
+
+.logo {
+  height: 4.2em;
+  padding: 0.8em;
+  will-change: filter;
+  transition: filter 300ms;
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  background-color: var(--background-primary);
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em var(--secondary-blue));
+  border-color: var(--primary-blue);
+}
+
+/* 紧凑模式覆盖：缩小卡片、标题、字体和间距，便于桌面全屏显示更多内容 */
+.compact .sidebar {
+  padding: 0.6rem;
+}
+
+.compact .sidebar .menu-item {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.compact .card,
+.compact .panel {
+  padding: 0.6rem;
+  border-radius: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.compact h1 {
+  font-size: 1.6rem;
+}
+
+.compact h2 {
+  font-size: 1.05rem;
+}
+
+.compact .card-title {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.compact .card .content,
+.compact .panel .content {
+  font-size: 0.88rem;
+}
+
+.compact .stats-number {
+  font-size: 1.2rem;
+}
+
+.compact .app-container {
+  gap: 0.6rem;
+}
+
+.compact .app-container {
+  grid-template-columns: 240px 1fr;
+}
+
+.compact .main-content {
+  padding: 0.4rem;
+}
+
+/* 房间号紧凑显示 */
+.room-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  min-width: 96px;
+  padding: 0.6rem 1rem;
+}
+.room-box .room-label {
+  font-size: 0.85rem;
+  color: var(--primary-blue);
+  margin: 0;
+  line-height: 1;
+}
+.room-box .room-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.05;
+}
+
+/* 紧凑模式下的房间号进一步压缩 */
+.compact .room-box {
+  min-width: 72px;
+  padding: 0.2rem 0.4rem;
+}
+.compact .room-box .room-label {
+  font-size: 1.60rem;
+}
+.compact .room-box .room-number {
+  font-size: 2.00rem;
+}
+
+/* 欢迎卡片左侧横向元信息 */
+.left-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+.left-meta .greeting {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.greeting-block .greeting {
+  font-size: 2.8rem; /* 稍微缩小欢迎语 */
+  line-height: 1.02;
+  margin-bottom: 0.05rem;
+  font-weight: 500 !important; /* 强制取消加粗 */
+}
+.greeting-block p {
+  margin: 0;
+  color: rgba(227,242,255,0.95);
+  font-size: 1.6rem; /* 放大日期/时间以提高可读性 */
+  line-height: 1.06;
+}
+.welcome-card {
+  margin: 0 auto;    /* 居中 */
+  padding: 0.4rem 0.8rem !important; /* 更紧凑的内边距 */
+}
+
+/* 将房间号移动到欢迎卡的垂直中心（靠右） */
+.welcome-card {
+  position: relative;
+}
+.welcome-card .room-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* 水平 & 垂直居中 */
+  min-width: 96px; /* 保持原有最小宽度 */
+  padding: 0.5rem 0.9rem; /* 适度内边距以配合居中布局 */
+  right: auto;
+}
+.welcome-card .room-box .room-number {
+  font-size: 3.2rem; /* 更大的房间号字号 */
+}
+
+.welcome-right-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 0rem;
+  position: relative;
+  transform: translateY(-50px); /* 向上移动日期时间 */
+  transition: transform 150ms ease;
+}
+.welcome-right-meta .date-line {
+  color: rgba(227,242,255,0.95);
+  font-size: 1.25rem;
+  margin: 0;
+  line-height: 1.06;
+}
+.welcome-right-meta .date-line + .date-line { /* small left gap if stacked */
+  margin-top: 4px;
+}
+.left-meta p {
+  margin: 0;
+  color: var(--blue-100, #e6f0ff);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em var(--primary-blue-light));
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--secondary-blue);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.15);
+  transform: translateY(-2px);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 900px) {
+  .dashboard-grid {
+  grid-template-columns: repeat(4, 1fr); /* 桌面：一行四个模块 */
+    gap: 1rem;
+  }
+}
+
+.widget-card {
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-light);
+  border-radius: 10px;
+  padding: 0.9rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
+  transition: all 0.2s ease;
+}
+
+.widget-card:hover {
+  border-color: var(--primary-blue);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.status-card {
+  background: linear-gradient(135deg, var(--very-light-blue), var(--background-primary));
+  border: 2px solid var(--border-light);
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.status-card:hover {
+  border-color: var(--secondary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+}
+
+.read-the-docs {
+  color: var(--text-light);
+}
+
+/* SOS 不再固定在视口，放入 header 内 */
+.sos-fixed { display: inline-block; position: static !important; right: auto !important; top: auto !important; }
+
+/* 调整 SOS 主按钮：外框略小，图标/文字略大以便更醒目 */
+.sos-fixed button[aria-label="紧急呼叫"] {
+  width: 64px !important; /* 适当放大按钮尺寸以容纳更大的图标 */
+  height: 64px !important;
+  font-size: 2.6rem !important; /* 合理图标字号 */
+  line-height: 1 !important;
+  padding: 0 !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.sos-fixed button[aria-label="紧急呼叫"]:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+/* Header brand: ensure logo and title sit on the same horizontal line */
+/* 样式：Emergency portal 面板边框与每项占满整行 */
+.emergency-portal-panel {
+  background: #ffffff;
+  border: 1px solid rgba(59,130,246,0.16);
+  border-radius: 10px;
+  padding: 6px !important;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+}
+.emergency-portal-panel button {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 12px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(15,23,42,0.04) !important;
+  background: transparent !important;
+}
+.emergency-portal-panel button:last-child {
+  border-bottom: none !important;
+}
+.emergency-portal-panel button .text-xl {
+  font-size: 1.05rem !important;
+}
+
+header .flex.items-center {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap; /* prevent logo/title from stacking */
+  gap: 0.6rem;
+}
+
+header .flex.items-center h1 {
+  margin: 0;
+  display: inline-block;
+  line-height: 1;
+}
+
+header .flex.items-center span {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* header-brand: keep logo and title on one line and increase sizes */
+.header-brand {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.header-brand h1 {
+  font-size: 2.4rem; /* larger title */
+  margin: 0;
+}
+.header-brand span {
+  font-size: 2.6rem; /* larger icon */
+}
+
+/* 放大并居中 header 标题 */
+.header-center-title {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -35px); 
+  font-size: 3.0rem !important;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .header-center-title { font-size: 1.8rem !important; position: static; transform: none; }
+}
+
+/* 固定在页面右上角的品牌图标 */
+.user-controls-fixed { display: none; }
+
+/* header 内布局：左 SOS，中标题，右用户控件 */
+.header-left { flex: 0 0 auto; }
+.header-center { position: relative; flex: 1 1 auto; display: flex; justify-content: center; }
+.header-right { flex: 0 0 auto; }
+
+/* 做一些微调，保证 header 内的 SOS 与按钮视觉一致 */
+.header-left .sos-fixed { margin-left: 0; margin-right: 8px; }
+.header-left .sos-fixed button[aria-label="紧急呼叫"] { box-shadow: 0 6px 12px rgba(14,165,233,0.08); }
+
+/* 如果 EmergencyButton 以 inline 模式渲染（外层为 .header-left），使用更具体的选择器确保样式不被覆盖 */
+.header-left button[aria-label="紧急呼叫"] {
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 2.6rem !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12) !important;
+  border-radius: 9999px !important;
+}
+
+.header-left button[aria-label="紧急呼叫"]:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+}
+
+@media (max-width: 768px) {
+  .header-brand h1 { font-size: 1.6rem; }
+  .header-brand span { font-size: 1.8rem; }
+  .greeting-block .greeting { font-size: 1.6rem; }
+  .greeting-block p { font-size: 1rem; }
+  .welcome-right-meta .date-line { font-size: 1.05rem; }
+  .welcome-right-meta { transform: translateY(-4px); }
+  .welcome-card .room-box { position: static; transform: none; margin-top: 6px; }
+}
+
+/* 确保弹窗在最顶层 - Portal样式 */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 99999 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.modal-content {
+  background: white !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  max-width: 28rem !important;
+  width: 100% !important;
+  transform: none !important;
+  position: relative !important;
+  padding-left: 2.5rem !important;
+  padding-right: 1.5rem !important;
+  padding-top: 1rem !important;
+  padding-bottom: 2rem !important;
+}
