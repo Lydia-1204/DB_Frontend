@@ -6,12 +6,29 @@
   background-color: #f8fafc;
 }
 
+:root { --home-center-shift: -40px; }
+
 /* 首页整体布局 */
 .home-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #eff6ff 0%, #ffffff 55%, #dbeafe 100%);
+  justify-content: center; /* 垂直居中整块内容 */
+}
+
+/* 包裹标题与主内容，让标题顶部到视口顶部和卡片底部到视口底部间距相等 */
+.home-center-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  /* 使用自动上下 margin 来平衡顶部与底部空白 */
+  margin-top: auto;
+  margin-bottom: auto;
+  transform: translateY(var(--home-center-shift)); /* 上移微调以使上下间距更接近 */
 }
 
 .home-header {
@@ -20,8 +37,8 @@
   backdrop-filter: none;
   border-bottom: 1px solid rgba(191,219,254,0.7);
   box-shadow: none;
-  /* 适度增加顶部留白和标题上下间距，视觉更舒适 */
-  padding: 40px 20px 18px;
+  /* 减少顶部高度以便功能卡片上移 */
+  padding: 24px 20px 10px;
 }
 
 .home-header-inner {
@@ -53,9 +70,8 @@
   width: 100%;
   border-top: 1px solid #bfdbfe;
   border-bottom: 1px solid #bfdbfe;
-  /* 略微增加副标题上下内边距，配合标题下间距 */
-  padding: 18px 0;
-  margin-bottom: 30px;
+  padding: 10px 0;
+  margin-bottom: 28px; /* 标题与卡片间距基础值 */
 }
 
 .home-subline-flex {
@@ -88,15 +104,23 @@
 @media (min-width: 768px) { .home-date { font-size: 18px; } }
 
 .home-main {
-  flex: 1;
+  flex: 0; /* 让内容自身高度参与垂直居中 */
   display: flex;
-  align-items: center;
+  align-items: center; /* 卡片行居中 */
   width: 100%;
-  /* 缩小主区内边距以节省高度 */
-  padding: 24px 16px 28px;
+  padding: 40px 18px 18px; /* 增加顶部内边距使卡片下移，拉开与标题的距离 */
+  overflow: visible;
 }
 @media (min-width: 768px) {
-  .home-main { padding: 40px 24px 36px; }
+  .home-main { padding: 48px 32px 20px; }
+  .home-subline-box { margin-bottom: 48px; } /* 大屏下更大的间距 */
+}
+
+/* 视口较矮时取消垂直居中以防内容溢出 */
+@media (max-height: 700px) {
+  .home-wrapper { justify-content: flex-start; }
+  .home-main { align-items: flex-start; }
+  .home-center-wrapper { margin-top: 0; margin-bottom: 0; transform: none; }
 }
 
 .home-main-inner { width: 100%; max-width: 1280px; margin: 0 auto; }
@@ -107,7 +131,7 @@
 .function-grid {
   display: grid !important;
   grid-template-columns: repeat(1, 1fr) !important;
-  gap: 1.2rem !important;
+  gap: 1.6rem !important; /* 增加间距 */
   justify-items: center !important;
   align-items: stretch !important;
 }
@@ -121,7 +145,7 @@
 
 @media (min-width: 1024px) {
   .function-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* 一行四个 */
     gap: 2rem !important;
   }
 }
@@ -130,14 +154,14 @@
   background: white;
   border: 2px solid #dbeafe;
   border-radius: 1rem;
-  padding: 1.25rem;
+  padding: 2.25rem; /* 放大内部留白 */
   text-align: center;
   cursor: pointer;
   transition: all 0.22s ease;
-  box-shadow: 0 3px 6px -2px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
   width: 100%;
-  max-width: 360px;
-  min-height: 220px;
+  max-width: 520px; /* 加宽卡片 */
+  min-height: 360px; /* 放大卡片 */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -147,6 +171,23 @@
   border-color: #60a5fa;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+/* 调整卡片内图标与文字大小 */
+.function-card .inline-flex {
+  width: 88px !important;
+  height: 88px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto 1.5rem !important; /* 保证图标在卡片顶部居中并与标题有一致的间距 */
+}
+.function-card .inline-flex .w-8 { width: 40px !important; height: 40px !important; }
+.function-card h3 { font-size: 22px; margin-top: 14px; }
+.function-card p { font-size: 16px; line-height: 1.75; }
+
+@media (min-width: 1024px) {
+  .function-grid { gap: 2.4rem !important; }
 }
 
 .logo {
