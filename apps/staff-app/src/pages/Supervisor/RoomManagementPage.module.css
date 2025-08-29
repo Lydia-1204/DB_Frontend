@@ -1,0 +1,227 @@
+/*RoomManagementPage.module.css */
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+}
+
+.error { color: #ff4d4f; }
+h1 { font-size: 24px; margin-bottom: 24px; }
+
+/* 统计区域 */
+.statsContainer {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.statsContainer h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+.statKey { font-weight: 500; color: #555; }
+.statValue { font-weight: bold; color: #1890ff; }
+
+/* 操作栏 */
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+}
+.searchInput { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; width: 250px; }
+.addButton { padding: 8px 16px; background-color: #1890ff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+
+/* 表格 */
+.tableContainer { background: #fff; padding: 20px; border-radius: 8px; overflow-x: auto; }
+.roomTable { width: 100%; border-collapse: collapse; }
+.roomTable th, .roomTable td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.roomTable th { background-color: #fafafa; font-weight: 600; }
+
+/* 状态徽章 */
+.statusBadge { padding: 4px 8px; border-radius: 12px; font-size: 12px; color: #fff; }
+.statusBadge.空闲 { background-color: #52c41a; }
+.statusBadge.入住 { background-color: #ff4d4f; }
+.statusBadge.维修 { background-color: #faad14; }
+
+/* 操作按钮 */
+/* --- 粘贴这段新代码 --- */
+.actionButton {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  font-size: 14px;
+  font-weight: bold;
+}
+.actionButton:hover {
+  opacity: 0.8;
+}
+/* 我们也为房间管理加上 editButton 样式，以备将来使用 */
+.editButton {
+  background-color: #52c41a; /* 绿色 */
+}
+.deleteButton {
+  background-color: #ff4d4f; /* 红色 */
+}
+/* 搜索表单 */
+.searchForm {
+  display: flex;
+  gap: 8px;
+}
+
+/* 分页 */
+/* --- 粘贴这段新代码 --- */
+.paginationContainer {
+  display: flex; justify-content: center; align-items: center;
+  margin-top: 24px; gap: 12px;
+}
+.paginationContainer span { font-size: 14px; color: #555; }
+.paginationContainer button {
+  padding: 8px 16px; border: 1px solid #d9d9d9; background-color: #fff;
+  border-radius: 4px; cursor: pointer; transition: border-color 0.3s;
+}
+.paginationContainer button:hover:not(:disabled) { border-color: #1890ff; color: #1890ff; }
+.paginationContainer button:disabled { color: #ccc; cursor: not-allowed; border-color: #f0f0f0; }
+
+/* 模态框样式 */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.formGroup input,
+.formGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.modalActions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  background-color: #fff;
+  cursor: pointer;
+}
+.modalActions button[type="submit"] {
+  background-color: #1890ff;
+  color: #fff;
+  border-color: #1890ff;
+}
+
+/* 统计卡片 (借鉴自设备管理) */
+.statCard {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1890ff; /* 默认颜色 */
+  margin-bottom: 8px;
+}
+
+.statTitle {
+  font-size: 14px;
+  color: #888;
+}
+
+/* 覆盖 .mainStatsGrid 的旧样式 */
+.mainStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+/* 展开/收起按钮的容器 */
+.toggleButtonContainer {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: #1890ff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 覆盖 .detailedStatsGrid 的旧样式 */
+.detailedStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

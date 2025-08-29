@@ -1,0 +1,95 @@
+/* CleanerLayout.css */
+
+/* --- 1. 基础布局 --- */
+/* 这是最关键的部分：使用 Flexbox 创建左右两栏布局 */
+.cleaner-layout {
+  display: flex;         /* 启用 Flexbox 布局 */
+  height: 100vh;         /* 让整个布局占据 100% 的视窗高度 */
+  background-color: #f0f2f5; /* 右侧主内容区的背景色 */
+}
+
+/* --- 2. 侧边栏样式 (左侧) --- */
+.sidebar {
+  width: 240px;          /* 设置一个固定的宽度 */
+  flex-shrink: 0;        /* 防止在窗口缩小时侧边栏被压缩 */
+  background-color: #001529; /* 深蓝色背景，与图片一致 */
+  color: rgba(255, 255, 255, 0.85); /* 设置默认文字颜色 */
+  display: flex;         /* 同样使用 Flexbox，但这次是垂直方向 */
+  flex-direction: column;/* 让内部元素从上到下排列 */
+  height: 100%;          /* 确保侧边栏和父容器一样高 */
+}
+
+/* --- 3. 主内容区样式 (右侧) --- */
+.main-content {
+  flex-grow: 1;          /* 让主内容区占据所有剩余的空间 */
+  padding: 24px;         /* 在内容周围添加一些内边距 */
+  overflow-y: auto;      /* 如果内容过长，允许主内容区内部滚动，而不是整个页面滚动 */
+}
+
+/* --- 4. 侧边栏内部元素样式 --- */
+
+/* 头部区域 */
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+}
+
+.sidebar-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.6rem;
+  color: #fff;
+}
+
+.sidebar-header p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* 导航链接 */
+.sidebar-nav {
+  margin-top: 20px;
+}
+
+.sidebar-nav a {
+  display: block; /* 让链接占据整行，方便点击 */
+  padding: 15px 25px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* 鼠标悬停在链接上时的效果 */
+.sidebar-nav a:hover {
+  background-color: #1890ff; /* 悬停时显示高亮背景色 */
+}
+
+/* react-router-dom 会为当前激活的 NavLink 添加一个 "active" class */
+.sidebar-nav a.active {
+  background-color: #1890ff; /* 激活的链接保持高亮 */
+  font-weight: 600;
+  color: #fff;
+}
+
+/* 底部区域 (退出登录) */
+.sidebar-footer {
+  margin-top: auto; /* 关键！将这个 div 推到侧边栏的最底部 */
+  padding: 20px;
+}
+
+.sidebar-footer button {
+  width: 100%;
+  padding: 12px;
+  background-color: #e54d4f; /* 红色背景，与图片一致 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: opacity 0.3s;
+}
+
+.sidebar-footer button:hover {
+  opacity: 0.85;
+}

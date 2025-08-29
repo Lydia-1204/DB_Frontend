@@ -1,0 +1,266 @@
+/* --- 主容器和头部 --- */
+.container {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.button {
+  padding: 8px 16px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  font-size: 14px;
+}
+
+.button:hover {
+  opacity: 0.8;
+}
+
+/* --- 公告列表 --- */
+.announcementsList {
+  flex-grow: 1;
+  overflow-y: auto; /* 列表超出时可滚动 */
+  padding-right: 10px; /* 为滚动条留出空间 */
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* 失效公告的样式 */
+.deactivated {
+  background-color: #f5f5f5;
+  opacity: 0.7;
+}
+
+.deactivated .cardHeader {
+  background-color: #d9d9d9;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e8e8e8;
+  border-radius: 8px 8px 0 0;
+}
+
+.type {
+  background-color: #1890ff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status {
+  color: #595959;
+  font-size: 14px;
+}
+
+.date {
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.deactivateBtn {
+  margin-left: auto; /* 将按钮推到最右边 */
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.cardBody {
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* --- 评论区 --- */
+.commentsSection {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.comments {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-top: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.noComments {
+  color: #aaa;
+  font-style: italic;
+}
+
+.commentLine {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.commentInputWrapper {
+  display: flex;
+  margin-top: 15px;
+}
+
+.commentInputWrapper input {
+  flex-grow: 1;
+  border: 1px solid #d9d9d9;
+  padding: 8px 12px;
+  border-radius: 4px 0 0 4px;
+}
+
+.commentInputWrapper input:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.commentInputWrapper button {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+/* --- 模态框样式 --- */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.formGroup input, .formGroup textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  box-sizing: border-box; /* 确保 padding 不会撑大宽度 */
+}
+
+.audienceSelector {
+  display: flex;
+  gap: 10px;
+}
+
+.audienceBtn {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.audienceBtn.active {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancelBtn {
+  background-color: #fff;
+  color: #555;
+  border: 1px solid #d9d9d9;
+}
+
+.modalError {
+  color: #ff4d4f;
+  margin-top: 10px;
+}
+
+/* --- 加载和错误状态 --- */
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #888;
+}
+
+.error {
+  color: #ff4d4f;
+  padding: 20px;
+  background-color: #fff1f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+}

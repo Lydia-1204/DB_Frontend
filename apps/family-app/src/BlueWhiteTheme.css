@@ -1,0 +1,258 @@
+/* BlueWhiteTheme.css - 蓝白主题专用样式 */
+
+/* 确保强制使用蓝白主题，不跟随系统暗色模式 */
+* {
+  color-scheme: light only !important;
+}
+
+html, body {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 覆盖任何可能的暗色模式样式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light !important;
+    color: var(--text-primary) !important;
+    background-color: var(--background-secondary) !important;
+  }
+  
+  body {
+    background-color: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+  
+  * {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+}
+
+/* 通用卡片样式强化 */
+.card-enhanced {
+  background: linear-gradient(135deg, var(--very-light-blue), var(--background-primary));
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-enhanced:hover {
+  border-color: var(--secondary-blue);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 状态指示器 */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 2px solid;
+}
+
+.status-normal {
+  background-color: var(--very-light-blue);
+  color: var(--primary-blue);
+  border-color: var(--secondary-blue);
+}
+
+.status-warning {
+  background-color: #fef3cd;
+  color: #b45309;
+  border-color: #fbbf24;
+}
+
+.status-danger {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #f87171;
+}
+
+.status-success {
+  background-color: #d1fae5;
+  color: #059669;
+  border-color: #34d399;
+}
+
+/* 网格增强 */
+.grid-enhanced {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-enhanced {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-enhanced {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-enhanced {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* 蓝色渐变背景 */
+.bg-blue-gradient {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+}
+
+.bg-light-blue-gradient {
+  background: linear-gradient(135deg, var(--very-light-blue) 0%, var(--background-primary) 100%);
+}
+
+/* 图标容器 */
+.icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--very-light-blue);
+  border: 2px solid var(--border-light);
+  border-radius: 50%;
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+}
+
+/* 强化按钮样式 */
+.btn-primary-enhanced {
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+  color: white;
+  border: 2px solid var(--primary-blue);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary-enhanced:hover {
+  background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
+  border-color: var(--primary-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary-enhanced {
+  background-color: var(--background-primary);
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-enhanced:hover {
+  background-color: var(--light-blue);
+  border-color: var(--primary-blue-dark);
+}
+
+/* 输入框增强 */
+.input-enhanced {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-light);
+  border-radius: 0.75rem;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.input-enhanced:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 表格增强 */
+.table-enhanced {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--background-primary);
+  border: 2px solid var(--border-light);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.table-enhanced th {
+  background-color: var(--light-blue);
+  color: var(--text-primary);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-light);
+}
+
+.table-enhanced td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table-enhanced tr:hover {
+  background-color: var(--very-light-blue);
+}
+
+/* 确保所有文本颜色正确 */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+}
+
+p, span, div {
+  color: var(--text-primary) !important;
+}
+
+/* 特殊颜色类 */
+.text-blue-primary { color: var(--primary-blue) !important; }
+.text-blue-secondary { color: var(--text-secondary) !important; }
+.text-blue-light { color: var(--text-light) !important; }
+
+.bg-blue-primary { background-color: var(--primary-blue) !important; }
+.bg-blue-secondary { background-color: var(--background-secondary) !important; }
+.bg-blue-accent { background-color: var(--background-accent) !important; }

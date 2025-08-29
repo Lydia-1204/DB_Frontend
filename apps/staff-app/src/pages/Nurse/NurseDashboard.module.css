@@ -1,0 +1,224 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sosSection {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header {
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.5rem;
+  color: #ff4d4f; /* 红色标题，突出紧急性 */
+}
+
+.sosList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.sosCard {
+  border: 1px solid #ffccc7;
+  background-color: #fff1f0;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sosCard p {
+  margin: 0;
+}
+
+.sosCard strong {
+  color: #333;
+}
+
+.cardActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  flex-grow: 1; /* 让按钮平分空间 */
+}
+
+.acceptBtn {
+  background-color: #52c41a; /* 绿色 - 响应 */
+}
+
+.completeBtn {
+  background-color: #1890ff; /* 蓝色 - 完成 */
+}
+
+.noSosMessage {
+  color: #888;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 40px;
+}
+
+.inProgressCard {
+  border: 1px solid #91d5ff;
+  background-color: #e6f7ff;
+}
+
+.inProgressCard .header {
+  color: #1890ff; /* 蓝色标题 */
+}
+
+/* 模态框样式 (借鉴自你提供的员工管理页样式) */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+}
+
+.modalContent textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+/* 护理计划区域样式 */
+.nursingPlanSection {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.planHeader {
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.5rem;
+  color: #333; /* 使用一个中性的颜色 */
+}
+
+.planList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.planCard {
+  border: 1px solid #d9d9d9;
+  background-color: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planCard p {
+  margin: 0;
+}
+
+.noPlansMessage {
+  color: #888;
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 40px;
+}
+
+/* 护理计划卡片里的“查看详情”按钮 */
+.viewPlanBtn {
+  background-color: #1890ff;
+  margin-top: 12px;
+  width: 100%;
+}
+
+/* 护理计划详情模态框的细节样式 */
+.planDetails {
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 0;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planDetails p {
+  margin: 0;
+}
+
+/* ... 保留所有已有 CSS ... */
+
+/* 筛选器按钮容器 */
+.filterControls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px; /* 与列表拉开一些距离 */
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: 1px solid #d9d9d9;
+  background-color: white;
+  color: #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.filterButton:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* 按钮被选中时的激活样式 */
+.filterButton.active {
+  background-color: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}

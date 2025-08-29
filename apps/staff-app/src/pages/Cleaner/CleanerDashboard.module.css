@@ -1,0 +1,117 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* 设置卡片之间的间距 */
+}
+
+.welcomeHeader {
+  margin-bottom: 8px;
+}
+
+.welcomeHeader h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.welcomeHeader p {
+  color: #555;
+  font-size: 1rem;
+}
+
+.card {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box; /* 确保 padding 不会撑大宽度 */
+  transition: border-color 0.3s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  border-color: #1890ff;
+  outline: none;
+}
+
+.button {
+  padding: 10px 20px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.button:disabled {
+  background-color: #a0cfff;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff4d4f;
+  margin: 10px 0;
+}
+
+.success {
+  color: #52c41a;
+  margin: 10px 0;
+}
+
+.historySection {
+  margin-top: 0; /* 因为我们用了 gap，所以不需要上边距 */
+}
+
+.recordList {
+  list-style-type: none;
+  padding: 0;
+  max-height: 400px; /* 给历史记录一个最大高度，超出则滚动 */
+  overflow-y: auto;
+}
+
+.recordItem {
+  background-color: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.recordItem:last-child {
+  margin-bottom: 0;
+}
+
+.recordItem p {
+  margin: 0 0 8px 0;
+}
+.recordItem p:last-child {
+  margin-bottom: 0;
+}
