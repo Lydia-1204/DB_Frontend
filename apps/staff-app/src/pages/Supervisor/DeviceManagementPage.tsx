@@ -267,7 +267,7 @@ export function DeviceManagementPage() {
         )}
       </div>
       
-      <div className={styles.pagination}>
+      <div className={styles.paginationContainer}>
         <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
           上一页
         </button>

@@ -308,15 +308,15 @@ export interface HealthAlert {
 
 // 文件来源: VisitorRegistration.cs
 export interface VisitorRegistration {
-  visitor_id: number;
-  family_id: number;
-  elderly_id: number;
-  visitor_name: string;
-  visit_time: string; // Corresponds to DateTime
-  relationship_to_elderly: string;
-  visit_reason: string;
-  visit_type: string;
-  approval_status: string;
+  registrationId: number; // 主键
+  visitorId: number;
+  elderlyId: number;
+  visitorName: string;
+  visitTime: string;
+  relationshipToElderly: string;
+  visitReason: string;
+  visitType: string;
+  approvalStatus: "待批准" | "已批准" | "已拒绝"; // 使用明确的状态值
 }
 
 // 文件来源: StaffSchedule.cs

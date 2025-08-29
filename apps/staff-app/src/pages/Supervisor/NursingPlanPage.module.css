@@ -233,3 +233,47 @@
 .reportCard li:last-child {
   border-bottom: none;
 }
+
+/* 新增：用于容纳筛选器和按钮的容器 */
+.actionBar {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* 元素之间的间距 */
+}
+
+/* 新增：美化后的筛选下拉框样式 (采用自定义箭头的高级方案) */
+.filterSelect {
+  /* --- 隐藏原生UI --- */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* --- 基础样式 --- */
+  padding: 8px 32px 8px 12px; /* 右侧留出空间给箭头 */
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  background-color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  
+  /* --- 自定义箭头 (使用内联SVG，无需额外图片文件) --- */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.2em 1.2em;
+
+  /* --- 交互效果 --- */
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.filterSelect:hover {
+  border-color: #40a9ff; /* 鼠标悬停时边框变蓝 */
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2); /* 点击时添加柔和辉光 */
+}

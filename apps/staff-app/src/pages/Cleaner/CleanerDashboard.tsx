@@ -1,41 +1,43 @@
 import React, { useState, useEffect, FormEvent } from 'react';
-import type { StaffInfo, DisinfectionRecord } from '@smart-elderly-care/types'; // 确保类型包路径正确
-import styles from './CleanerDashboard.module.css'; // 我们将为 Dashboard 创建一个专属的样式文件
+import type { StaffInfo, DisinfectionRecord } from '@smart-elderly-care/types'; 
+import styles from './CleanerDashboard.module.css';
 
-// API 地址
-const API_URL = '/api-staff/staff-info/disinfection/record';
+const POST_API_URL = '/api-staff/staff-info/disinfection/record';
+const GET_RECORDS_API_URL = '/api-staff/staff-info/disinfection/records';
 
 export function CleanerDashboard() {
-  // 表单状态
+  // ... 其他 state 声明保持不变 ...
   const [area, setArea] = useState('');
   const [methods, setMethods] = useState('');
-  
-  // 交互状态
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
-  // 历史记录状态
   const [records, setRecords] = useState<DisinfectionRecord[]>([]);
   const [isListLoading, setIsListLoading] = useState(true);
 
-  // 获取当前登录的用户信息
+
   const getLoggedInUser = (): StaffInfo | null => {
     const userString = localStorage.getItem('loggedInUser');
     return userString ? JSON.parse(userString) : null;
   };
 
-  // 获取历史记录的函数
   const fetchRecords = async (staffId: number) => {
+    setIsListLoading(true);
     try {
-      setIsListLoading(true);
-      // 注意：这里我们假设有一个 GET 接口来获取指定员工的记录
-      // 实际开发中需要后端提供此接口，例如 GET /api/staff-info/disinfection/record/staff/{staffId}
-      // 作为演示，我们暂时留空，你可以后续实现
-      console.log("获取历史记录功能待后端 API 支持");
-      setRecords([]); // 暂时设置为空数组
-    } catch (err) {
+      const response = await fetch(GET_RECORDS_API_URL);
+      if (!response.ok) {
+        throw new Error(`获取记录失败，服务器状态: ${response.status}`);
+      }
+      const allRecords: DisinfectionRecord[] = await response.json();
+      const userRecords = allRecords.filter(record => record.staffId === staffId);
+      
+      // 按时间倒序排序，让最新的记录显示在最上面
+      userRecords.sort((a, b) => new Date(b.disinfectionTime).getTime() - new Date(a.disinfectionTime).getTime());
+      
+      setRecords(userRecords);
+    } catch (err: any) {
       console.error("获取历史记录失败", err);
+      setError('无法加载历史记录，请稍后重试。');
     } finally {
       setIsListLoading(false);
     }
@@ -50,7 +52,7 @@ export function CleanerDashboard() {
     }
   }, []);
 
-  // 表单提交处理函数
+  // 【核心修改点】更新 handleSubmit 函数
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
@@ -67,31 +69,34 @@ export function CleanerDashboard() {
       return;
     }
 
-    const newRecord = {
+     const newRecordData = {
       area,
       methods,
       staffId: user.staffId,
-      disinfectionTime: new Date().toISOString(), // 自动生成当前时间的 ISO 格式字符串
+      // 【修改点】在这里重新加上 disinfectionTime
+      disinfectionTime: new Date().toISOString(), // toISOString() 生成标准格式 '2025-08-09T02:14:16.808Z'
     };
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(API_URL, {
+      // 步骤 1: 发送 POST 请求提交新记录
+      const response = await fetch(POST_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRecord),
+        body: JSON.stringify(newRecordData),
       });
 
       if (!response.ok) {
         throw new Error(`提交失败，服务器状态: ${response.status}`);
       }
       
-      // 提交成功
+      // 步骤 2: 提交成功后的操作
       setSuccessMessage('清洁记录提交成功！');
-      setArea('');
-      setMethods('');
-      // 刷新列表（将新记录添加到最前面）
-      setRecords(prevRecords => [newRecord as DisinfectionRecord, ...prevRecords]);
+      setArea('');    // 清空输入框
+      setMethods(''); // 清空输入框
+      
+      // 步骤 3: 重新调用 fetchRecords 函数，从服务器获取包含最新记录的完整列表
+      await fetchRecords(user.staffId);
 
     } catch (err: any) {
       setError(err.message || '发生未知错误');
@@ -100,13 +105,12 @@ export function CleanerDashboard() {
     }
   };
   
-  const user = getLoggedInUser();
-
+  // ... JSX 渲染部分保持不变 ...
   return (
     <div className={styles.container}>
       {/* 欢迎语 */}
       <div className={styles.welcomeHeader}>
-        <h1>{user ? `${user.name}，欢迎回来！` : '清洁工工作台'}</h1>
+        <h1>{getLoggedInUser() ? `${getLoggedInUser()!.name}，欢迎回来！` : '清洁工工作台'}</h1>
         <p>在这里提交您的日常清洁与消毒工作记录。</p>
       </div>
 
@@ -153,8 +157,8 @@ export function CleanerDashboard() {
           <p>正在加载历史记录...</p>
         ) : records.length > 0 ? (
           <ul className={styles.recordList}>
-            {records.map((record, index) => (
-              <li key={index} className={styles.recordItem}>
+            {records.map((record) => (
+              <li key={record.disinfectionId} className={styles.recordItem}>
                 <p><strong>区域:</strong> {record.area}</p>
                 <p><strong>方法:</strong> {record.methods}</p>
                 <p><strong>时间:</strong> {new Date(record.disinfectionTime).toLocaleString()}</p>

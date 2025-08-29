@@ -333,7 +333,7 @@ export function RoomManagementPage() {
                   <td>¥{room.rate.toFixed(2)}</td>
                   <td>{room.devices?.length || 0}</td>
                   <td>
-                    <button onClick={() => handleOpenFormModal(room)} className={styles.actionButton}>编辑</button>
+                    <button onClick={() => handleOpenFormModal(room)} className={`${styles.actionButton} ${styles.editButton}`}>编辑</button>
                     <button onClick={() => handleDelete(room.roomId)} className={`${styles.actionButton} ${styles.deleteButton}`}>删除</button>
                   </td>
                 </tr>
@@ -344,7 +344,7 @@ export function RoomManagementPage() {
       </div>
 
       {totalCount > 0 && (
-        <div className={styles.pagination}>
+        <div className={styles.paginationContainer}>
           <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1 || isLoading}>上一页</button>
           <span>第 {currentPage} 页 / 共 {totalPages} 页 (共 {totalCount} 条)</span>
           <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages || isLoading}>下一页</button>

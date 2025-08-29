@@ -154,3 +154,35 @@
   max-height: 90vh; /* 新增：最大高度为视窗的90% */
   overflow-y: auto; /* 新增：内容超出时显示滚动条 */
 }
+
+
+/* 访客 */
+/* Filter Controls Container */
+.filterControls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Individual Filter Button */
+.filterButton {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filterButton:hover {
+  background-color: #e0e0e0;
+}
+
+/* Active Filter Button Style */
+.filterButton.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  font-weight: bold;
+}

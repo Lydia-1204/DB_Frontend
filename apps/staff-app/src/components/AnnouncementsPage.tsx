@@ -6,8 +6,8 @@ interface AnnouncementsPageProps {
   role: 'supervisor' | 'doctor' | 'nurse' | 'cleaner' | 'maintenance';
 }
 
-// 可供选择的观众选项
-const AUDIENCE_OPTIONS = ['员工', '家属'];
+// 修改(2): 更新可供选择的观众选项，新增“全体”
+const AUDIENCE_OPTIONS = ['员工', '家属', '全体'];
 
 export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) => {
   const [announcements, setAnnouncements] = useState<SystemAnnouncement[]>([]);
@@ -17,10 +17,12 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
   // 用于 Supervisor 发布新公告的模态框
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 修改(1): 将 newAnnouncement 的 audience 状态从数组改为字符串，并设置默认值
   const [newAnnouncement, setNewAnnouncement] = useState({ 
     type: '通知', 
     content: '', 
-    audience: ['员工'] as string[]
+    audience: '员工' as string // 默认为 '员工'
   });
 
   // 用于存储每个公告的评论输入框内容
@@ -41,8 +43,8 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
       if (!response.ok) throw new Error('获取公告列表失败');
       const data: SystemAnnouncement[] = await response.json();
       
-      // 核心：在前端过滤，只显示受众包含“员工”的公告
-      const filteredData = data.filter(ann => ann.audience.includes('员工'));
+      // 修改(3): 核心 - 更新前端过滤逻辑，显示受众为“员工”或“全体”的公告
+      const filteredData = data.filter(ann => ann.audience === '员工' || ann.audience === '全体');
       
       // 按日期降序排序，最新的在最前面
       setAnnouncements(filteredData.sort((a, b) => new Date(b.announcement_date).getTime() - new Date(a.announcement_date).getTime()));
@@ -53,27 +55,23 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
     }
   };
 
-  // 处理多选观众的逻辑
+  // 修改(4): 处理单选观众的逻辑，变得更简单
   const handleAudienceChange = (option: string) => {
-    setNewAnnouncement(prev => {
-      const newAudience = prev.audience.includes(option)
-        ? prev.audience.filter(item => item !== option)
-        : [...prev.audience, option];
-      return { ...prev, audience: newAudience };
-    });
+    setNewAnnouncement(prev => ({ ...prev, audience: option }));
   };
 
   // 主管发布新公告
   const handlePostAnnouncement = async (e: FormEvent) => {
     e.preventDefault();
     if (!loggedInUser) return setError("无法获取用户信息，请重新登录");
-    if (newAnnouncement.audience.length === 0) return setError("请至少选择一个公告受众");
+    if (!newAnnouncement.audience) return setError("请选择一个公告受众");
 
     setIsSubmitting(true);
     const payload: NewAnnouncementPayload = {
       type: newAnnouncement.type,
       content: newAnnouncement.content,
-      audience: newAnnouncement.audience.join(','), // 将数组转换为逗号分隔的字符串
+      // 修改(5): audience 直接使用字符串，不再需要 join
+      audience: newAnnouncement.audience,
       staffId: loggedInUser.staffId,
     };
     
@@ -85,7 +83,8 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
       });
       if (!response.ok) throw new Error('发布公告失败');
       setIsModalOpen(false);
-      setNewAnnouncement({ type: '通知', content: '', audience: ['员工']}); // 重置表单
+      // 重置表单，audience 恢复默认值
+      setNewAnnouncement({ type: '通知', content: '', audience: '员工'}); 
       fetchAnnouncements(); // 刷新列表
     } catch (err: any) {
       setError(err.message);
@@ -94,7 +93,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
     }
   };
 
-  // 所有员工发表评论
+  // 所有员工发表评论 (此函数逻辑无需修改)
   const handlePostComment = async (announcementId: number) => {
     const commentText = commentInputs[announcementId];
     if (!loggedInUser || !commentText || commentText.trim() === '') return;
@@ -120,19 +119,38 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
     }
   };
   
-  // 主管使公告失效
+
+  // 主管使公告失效 (已根据新需求修改)
   const handleDeactivate = async (announcementId: number) => {
+    // 步骤 1: 检查用户信息是否存在
+    if (!loggedInUser) {
+        setError("无法获取您的用户信息，请重新登录后再操作。");
+        return;
+    }
+    
     if (!window.confirm("确定要使此公告失效吗？此操作不可逆。")) return;
+    
     try {
-        const response = await fetch(`/api/SystemAnnouncement/${announcementId}/deactivate`, { method: 'PUT' });
-        if (!response.ok) throw new Error('操作失败');
+        // 步骤 2: 构造请求体
+        const payload = {
+            staffId: loggedInUser.staffId
+        };
+
+        // 步骤 3: 更新 fetch 调用，加入 headers 和 body
+        const response = await fetch(`/api/SystemAnnouncement/${announcementId}/deactivate`, { 
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error('操作失败，请检查权限或联系管理员');
+        
         fetchAnnouncements(); // 刷新列表以更新状态
     } catch (err: any) {
         setError(err.message);
     }
   };
-
-  // 格式化评论，使其换行显示
+  // 格式化评论，使其换行显示 (此函数逻辑无需修改)
   const formatComments = (comments: string) => {
     if (!comments || comments.trim() === '') return <p className={styles.noComments}>暂无评论</p>;
     return comments.split('\n').map((line, index) => (
@@ -166,14 +184,15 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
                 />
             </div>
             <div className={styles.formGroup}>
-                <label>选择受众 (可多选)</label>
+                <label>选择受众</label>
                 <div className={styles.audienceSelector}>
                     {AUDIENCE_OPTIONS.map(option => (
                         <button 
                             type="button" 
                             key={option}
                             onClick={() => handleAudienceChange(option)}
-                            className={`${styles.audienceBtn} ${newAnnouncement.audience.includes(option) ? styles.active : ''}`}
+                            // 修改(6): 更新按钮激活状态的判断逻辑
+                            className={`${styles.audienceBtn} ${newAnnouncement.audience === option ? styles.active : ''}`}
                         >
                             {option}
                         </button>
@@ -231,7 +250,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ role }) =>
               </div>
             </div>
           </div>
-        )) : <p>暂无面向员工的公告。</p>}
+        )) : <p>暂无面向您的公告。</p>}
       </div>
     </div>
   );

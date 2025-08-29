@@ -1,4 +1,7 @@
 /* --- 你提供的统一风格 --- */
+:root {
+  color-scheme: light;
+}
 .container {
   background-color: white;
   padding: 24px;
@@ -49,6 +52,9 @@
 .modalContent {
   background-color: white; padding: 24px; border-radius: 8px;
   width: 500px; max-width: 90%;
+   /* --- 新增/修改以下两行 --- */
+  max-height: 85vh; /* 设置最大高度为视窗高度的85% */
+  overflow-y: auto; /* 当内容超出时，垂直方向显示滚动条 */
 }
 .modalContent h2 { margin-top: 0; }
 .formGroup { margin-bottom: 16px; }
@@ -93,3 +99,65 @@
 }
 .distroChart h4 { margin-top: 0; }
 .distroChart ul { padding-left: 20px; margin: 0; }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* 新增：用于容纳筛选和搜索框的容器 */
+.actionBar {
+  display: flex;
+  gap: 16px; /* 元素之间的间距 */
+  flex-grow: 1; /* 让它占据多余的空间 */
+  justify-content: flex-start; /* 从左边开始排列 */
+  margin-left: 24px; /* 与标题保持一些距离 */
+}
+
+/* 新增：搜索输入框的样式 */
+.searchInput {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  min-width: 200px; /* 给一个最小宽度 */
+}
+
+/* 新增：职位筛选下拉菜单的样式 */
+/* 职位筛选下拉菜单的样式 - 方案二 */
+.filterSelect {
+  /* --- 核心部分：隐藏原生UI --- */
+  appearance: none; /* 隐藏标准浏览器UI */
+  -webkit-appearance: none; /* 兼容 Chrome, Safari, a new Edge */
+  -moz-appearance: none; /* 兼容 Firefox */
+
+  /* --- 基础样式 --- */
+  padding: 8px 32px 8px 12px; /* 右侧留出空间给箭头 */
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  background-color: #fff;
+  font-size: 14px;
+  
+  /* --- 自定义箭头 --- */
+  /* 使用内联SVG作为背景图片，无需额外文件，且清晰度高 */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center; /* 定位箭头位置 */
+  background-size: 1.2em 1.2em; /* 控制箭头大小 */
+
+  /* --- 交互效果 --- */
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* 鼠标悬停时的效果 */
+.filterSelect:hover {
+  border-color: #40a9ff;
+}
+
+/* 获得焦点时的效果 (点击后) */
+.filterSelect:focus {
+  outline: none;
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}

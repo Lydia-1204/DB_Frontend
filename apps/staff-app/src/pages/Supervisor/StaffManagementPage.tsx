@@ -33,15 +33,19 @@ const parseWorkSchedule = (schedule: string | undefined) => {
 };
 
 export function StaffManagementPage() {
-  const [staffList, setStaffList] = useState<StaffInfo[]>([]);
+  // --- State for filtering and searching ---
+  const [masterStaffList, setMasterStaffList] = useState<StaffInfo[]>([]); // Stores the original, clean data from the API
+  const [searchTerm, setSearchTerm] = useState(''); // Manages the search input value
+  const [selectedPosition, setSelectedPosition] = useState('all'); // Manages the position filter dropdown
+
+  // --- Original State ---
+  const [staffList, setStaffList] = useState<StaffInfo[]>([]); // Now used to display the *filtered* results
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Partial<StaffInfo> | null>(null);
   const [isFormLoading, setIsFormLoading] = useState(false);
-
-  // **↓↓↓ 核心修复：引入一个独立的 state 来管理“模式” ↓↓↓**
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
 
   const [startDay, setStartDay] = useState('Mon');
@@ -56,8 +60,13 @@ export function StaffManagementPage() {
       const response = await fetch('/api-staff/staff-info/staff');
       if (!response.ok) throw new Error('获取员工列表失败');
       const data: StaffInfo[] = await response.json();
+
+      // **CORE LOGIC 1: Filter out "主管" (Manager) position right after fetching**
       const filteredData = data.filter(staff => staff.position !== '主管');
-      setStaffList(filteredData);
+      
+      // **CORE LOGIC 2: Set the master list with this clean data**
+      setMasterStaffList(filteredData);
+      
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -69,6 +78,29 @@ export function StaffManagementPage() {
     fetchStaffList();
   }, []);
 
+  // **CORE LOGIC 3: New useEffect to perform filtering whenever dependencies change**
+  useEffect(() => {
+    let results = masterStaffList;
+
+    // Step A: Filter by selected position
+    if (selectedPosition !== 'all') {
+      results = results.filter(staff => staff.position === selectedPosition);
+    }
+
+    // Step B: Filter by search term (on top of the position filter)
+    if (searchTerm.trim() !== '') {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      results = results.filter(staff => 
+        staff.name.toLowerCase().includes(lowercasedTerm) || // Match by name (case-insensitive)
+        String(staff.staffId).includes(lowercasedTerm)       // Match by ID
+      );
+    }
+
+    // Step C: Update the list that will be rendered
+    setStaffList(results);
+  }, [searchTerm, selectedPosition, masterStaffList]); // This effect re-runs when these values change
+
+  // Original useEffects for modal logic remain unchanged
   useEffect(() => {
     if (isModalOpen && editingStaff) {
       const newWorkSchedule = `${startDay}-${endDay} ${startTime}-${endTime}`;
@@ -76,7 +108,7 @@ export function StaffManagementPage() {
         setEditingStaff(prev => ({ ...prev!, workSchedule: newWorkSchedule }));
       }
     }
-  }, [startDay, endDay, startTime, endTime, isModalOpen]);
+  }, [startDay, endDay, startTime, endTime, isModalOpen, editingStaff]);
 
   useEffect(() => {
     if (editingStaff && editingStaff.position !== 'Nurse' && editingStaff.skillLevel !== 'none') {
@@ -85,7 +117,7 @@ export function StaffManagementPage() {
   }, [editingStaff?.position]);
 
   const handleOpenModalForEdit = async (id: number) => {
-    setModalMode('edit'); // **核心修复：设置模式为 'edit'**
+    setModalMode('edit');
     setIsModalOpen(true);
     setIsFormLoading(true);
     try {
@@ -108,7 +140,7 @@ export function StaffManagementPage() {
   };
 
   const handleOpenModalForNew = () => {
-    setModalMode('add'); // **核心修复：设置模式为 'add'**
+    setModalMode('add');
     setEditingStaff(initialNewStaff);
     const { startDay, endDay, startTime, endTime } = parseWorkSchedule(initialNewStaff.workSchedule);
     setStartDay(startDay);
@@ -133,7 +165,6 @@ export function StaffManagementPage() {
     e.preventDefault();
     if (!editingStaff) return;
 
-    // **核心修复：现在我们根据 modalMode 来判断**
     const isEditing = modalMode === 'edit'; 
     const url = isEditing
       ? `/api-staff/staff-info/staff/${editingStaff.staffId}`
@@ -185,9 +216,29 @@ export function StaffManagementPage() {
 
   return (
     <div className={styles.container}>
-      {/* ... 表格渲染部分保持不变 ... */}
       <div className={styles.header}>
         <h1>员工管理</h1>
+        {/* --- ADDED: Action bar for search and filter controls --- */}
+        <div className={styles.actionBar}>
+          <select 
+            className={styles.filterSelect}
+            value={selectedPosition}
+            onChange={(e) => setSelectedPosition(e.target.value)}
+          >
+            <option value="all">所有职位</option>
+            <option value="Cleaner">Cleaner</option>
+            <option value="维修工">维修工</option>
+            <option value="Nurse">Nurse</option>
+            <option value="Doctor">Doctor</option>
+          </select>
+          <input 
+            type="text"
+            placeholder="按ID或姓名搜索..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <button onClick={handleOpenModalForNew} className={styles.button}>新增员工</button>
       </div>
       <table className={styles.table}>
@@ -203,29 +254,37 @@ export function StaffManagementPage() {
           </tr>
         </thead>
         <tbody>
-          {staffList.map(staff => (
-            <tr key={staff.staffId}>
-              <td>{staff.staffId}</td>
-              <td>{staff.name}</td>
-              <td>{staff.position}</td>
-              <td>{staff.contactPhone}</td>
-              <td>{staff.skillLevel}</td>
-              <td>{staff.workSchedule}</td>
-              <td>
-                <div className={styles.actions}>
-                  <button onClick={() => handleOpenModalForEdit(staff.staffId)} className={`${styles.button} ${styles.editBtn}`}>编辑</button>
-                  <button onClick={() => handleDelete(staff.staffId)} className={`${styles.button} ${styles.deleteBtn}`}>删除</button>
-                </div>
+          {/* **MODIFIED: Render based on `staffList` (the filtered list) ** */}
+          {staffList.length > 0 ? (
+            staffList.map(staff => (
+              <tr key={staff.staffId}>
+                <td>{staff.staffId}</td>
+                <td>{staff.name}</td>
+                <td>{staff.position}</td>
+                <td>{staff.contactPhone}</td>
+                <td>{staff.skillLevel}</td>
+                <td>{staff.workSchedule}</td>
+                <td>
+                  <div className={styles.actions}>
+                    <button onClick={() => handleOpenModalForEdit(staff.staffId)} className={`${styles.button} ${styles.editBtn}`}>编辑</button>
+                    <button onClick={() => handleDelete(staff.staffId)} className={`${styles.button} ${styles.deleteBtn}`}>删除</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={7} style={{ textAlign: 'center' }}>
+                {masterStaffList.length > 0 ? '没有找到符合条件的员工。' : '暂无员工数据。'}
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
       {isModalOpen && (
         <div className={styles.modalBackdrop}>
           <div className={styles.modalContent}>
-            {/* **核心修复：标题根据 modalMode 判断** */}
             <h2>{modalMode === 'edit' ? '编辑员工' : '新增员工'}</h2>
             {isFormLoading ? (
               <div>正在加载员工信息...</div>
@@ -238,12 +297,10 @@ export function StaffManagementPage() {
                     name="staffId" 
                     value={editingStaff?.staffId || 0} 
                     onChange={handleFormChange} 
-                    // **核心修复：输入框是否禁用，也根据 modalMode 判断**
                     disabled={modalMode === 'edit'} 
                     required 
                   />
                 </div>
-                {/* ... 其他所有表单字段保持不变 ... */}
                 <div className={styles.formGroup}>
                   <label>姓名</label>
                   <input name="name" value={editingStaff?.name || ''} onChange={handleFormChange} required />

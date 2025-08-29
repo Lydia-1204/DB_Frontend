@@ -33,7 +33,7 @@ export function SupervisorLayout() {
           <NavLink to="/supervisor/nursing-plans">护理计划</NavLink>
           <NavLink to="/supervisor/disinfection-reports">消毒报告</NavLink>
           <NavLink to="/supervisor/devices">设备管理</NavLink>
-          <NavLink to="/supervisor/operations">运营与调度</NavLink>
+          
            {/* ↓↓↓↓ 在这里添加新的房间管理导航链接 ↓↓↓↓ */}
           <NavLink to="/supervisor/rooms">房间管理</NavLink>
           {/* ↓↓↓↓ 在这里添加新的费用结算导航链接 ↓↓↓↓ */}

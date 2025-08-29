@@ -57,6 +57,7 @@
 .actionButton:hover { opacity: 0.8; }
 .reportButton { background-color: #f5222d; }
 .fixButton { background-color: #52c41a; }
+.maintainButton { background-color: #faad14; } /* <-- 新增的样式，让按钮变黄 */
 .pagination {
   display: flex;
   justify-content: flex-end;

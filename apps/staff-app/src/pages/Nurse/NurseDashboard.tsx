@@ -37,26 +37,11 @@ export function NurseDashboard() {
       const allSos: EmergencySosEvent[] = await sosResponse.json();
       const allPlans: NursingPlan[] = await plansResponse.json();
 
-    // ↓↓↓↓ 监控探头 #1：查看最原始的数据 ↓↓↓↓
-    console.log("【原始数据】从API获取到的所有护理计划:", allPlans);
-    console.log("【原始数据】当前登录的用户信息:", currentUser);
-    // ↑↑↑↑ 请在这里设置监控探头 ↑↑↑↑
-
       setAllSosEvents(allSos);
-
-      // 核心修正点 #1: 使用 currentUser.staffId (小写)
-      const scheduledPlans = allPlans.filter(plan => 
-        plan.staffId === currentUser.staffId && plan.evaluationStatus === 'Scheduled'
-      );
-
-    // ↓↓↓↓ 监控探头 #2：查看筛选后的结果 ↓↓↓↓
-    console.log("【筛选结果】筛选出的、符合条件的护理计划:", scheduledPlans);
-    // ↑↑↑↑ 请在这里设置监控探头 ↑↑↑↑
       setAllNursingPlans(allPlans); 
-      
       setError(null);
     } catch (err: any) {
-      console.error("【捕获到错误】在 fetchAllData 中发生错误:", err); // 把错误打印出来！
+      console.error("在 fetchAllData 中发生错误:", err);
       setError(err.message);
     }
   };
@@ -74,14 +59,31 @@ export function NurseDashboard() {
     }
   }, [currentUser]);
 
-const filteredNursingPlans = useMemo(() => {
+  // ↓↓↓↓ 核心修正点：更新此处的过滤逻辑 ↓↓↓↓
+  const filteredNursingPlans = useMemo(() => {
     if (!currentUser) return [];
-    return allNursingPlans.filter(plan => 
-      plan.staffId === currentUser.staffId && plan.evaluationStatus === planFilter
-    );
-  }, [allNursingPlans, currentUser, planFilter]);
+    
+    return allNursingPlans.filter(plan => {
+      // 必须是分配给当前护士的计划
+      const isMyPlan = plan.staffId === currentUser.staffId;
+      if (!isMyPlan) return false;
 
-// --- 派生状态 (已修正，使用新的 state 变量名) ---
+      // 根据当前激活的过滤器（planFilter）来决定显示哪些计划
+      if (planFilter === 'Scheduled') {
+        // "待完成" 列表只显示 "Scheduled" 状态的计划
+        return plan.evaluationStatus === 'Scheduled';
+      } 
+      else if (planFilter === 'Completed') {
+        // "已完成" 列表现在包含 "Unpaid" 和 "Completed" 两种状态的计划
+        return plan.evaluationStatus === 'Unpaid' || plan.evaluationStatus === 'Completed';
+      }
+      
+      return false; // 默认不显示
+    });
+  }, [allNursingPlans, currentUser, planFilter]);
+  // ↑↑↑↑ 核心修正点结束 ↑↑↑↑
+
+  // --- 派生状态 ---
   const myInProgressEvent = useMemo(() => 
     allSosEvents.find(event => 
       event.calL_STATUS === 'InProgress' && event.responsE_STAFF_ID === currentUser?.staffId
@@ -100,7 +102,7 @@ const filteredNursingPlans = useMemo(() => {
       await fetch('/api/EmergencySOS/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callId: callId, responseStaffId: currentUser.staffId }), // 核心修正点 #2
+        body: JSON.stringify({ callId: callId, responseStaffId: currentUser.staffId }),
       });
       fetchAllData();
     } catch (err: any) { alert(err.message); }
@@ -114,11 +116,11 @@ const filteredNursingPlans = useMemo(() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           callId: selectedSosEvent.calL_ID,
-          staffId: currentUser.staffId, // 核心修正点 #3
+          staffId: currentUser.staffId,
           handlingResult: handlingResult,
         }),
       });
-      setIsSosModalOpen(false); // 关闭正确的模态框
+      setIsSosModalOpen(false);
       setHandlingResult('');
       fetchAllData();
     } catch (err: any) { alert(err.message); }
@@ -126,46 +128,38 @@ const filteredNursingPlans = useMemo(() => {
 
   const openCompleteModal = (event: EmergencySosEvent) => {
     setSelectedSosEvent(event);
-    setIsSosModalOpen(true); // 打开正确的模态框
+    setIsSosModalOpen(true);
   };
-  // 打开护理计划详情模态框
-const openPlanModal = (plan: NursingPlan) => {
-  setSelectedPlan(plan);
-  setIsPlanModalOpen(true);
-};
 
-// 标记护理计划为完成
-const handleCompletePlan = async () => {
-  if (!selectedPlan) return alert('未选中任何计划！');
+  const openPlanModal = (plan: NursingPlan) => {
+    setSelectedPlan(plan);
+    setIsPlanModalOpen(true);
+  };
 
-  try {
-    // 构造一个只包含新状态的更新对象
-    const updatedPlanData = {
-      ...selectedPlan, // 复制所有旧数据
-      evaluationStatus: 'Completed' // 只修改状态
-    };
-
-    const response = await fetch(`/api-staff/staff-info/nursing-plans/${selectedPlan.planId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedPlanData),
-    });
-
-    if (!response.ok) {
-      throw new Error('更新护理计划失败');
+  const handleCompletePlan = async () => {
+    if (!selectedPlan) return alert('未选中任何计划！');
+    try {
+      const updatedPlanData = {
+        ...selectedPlan,
+        evaluationStatus: 'Unpaid' // 护士点击完成后，状态变为 Unpaid
+      };
+      const response = await fetch(`/api-staff/staff-info/nursing-plans/${selectedPlan.planId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPlanData),
+      });
+      if (!response.ok) {
+        throw new Error('更新护理计划失败');
+      }
+      setIsPlanModalOpen(false);
+      setSelectedPlan(null);
+      fetchAllData(); 
+    } catch (err: any) {
+      alert(err.message);
     }
+  };
 
-    // 更新成功后，关闭模态框并立即刷新数据
-    setIsPlanModalOpen(false);
-    setSelectedPlan(null);
-    fetchAllData(); // 调用我们已有的数据刷新函数
-    
-  } catch (err: any) {
-    alert(err.message);
-  }
-};
-
-  // --- 渲染逻辑 (已修正) ---
+  // --- 渲染逻辑 ---
   return (
     <div className={styles.dashboardContainer}>
       {myInProgressEvent ? (
@@ -189,13 +183,11 @@ const handleCompletePlan = async () => {
             已完成的计划
           </button>
         </div>
-        {/* ↓↓↓↓ 核心修正点：在这里传入 title 属性 ↓↓↓↓ */}
         <NursingPlanList 
           plans={filteredNursingPlans} 
           onCardClick={openPlanModal}
-          title={`我的护理计划 (${planFilter})`}
-          // ↓↓↓↓ 在这里传入新的属性，将父组件的状态传递给子组件 ↓↓↓↓
-         filterType={planFilter}
+          title={`我的护理计划 (${planFilter === 'Scheduled' ? '待完成' : '已完成'})`}
+          filterType={planFilter}
         />
       </section>
       
@@ -213,8 +205,6 @@ const handleCompletePlan = async () => {
           plan={selectedPlan}
           onClose={() => setIsPlanModalOpen(false)}
           onComplete={handleCompletePlan}
-            // ↓↓↓↓ 在这里传入新的属性 ↓↓↓↓
-          // 当 planFilter 是 'Completed' 时，isCompletedView 就是 true
           isCompletedView={planFilter === 'Completed'}
         />
       )}
@@ -296,47 +286,41 @@ function CompleteModal({ onClose, onSubmit, result, setResult }: any) {
 }
 
 // ---------------------------
-// -- ↓↓↓↓ 新增子组件：护理计划列表 ↓↓↓↓
+// -- 子组件：护理计划列表
 // ---------------------------
-// ---------------------------
-// -- 子组件：护理计划列表 (已更新)
-// ---------------------------
-// ↓↓↓↓ 在 props 中加入 onCardClick 函数 ↓↓↓↓
 function NursingPlanList({ plans, onCardClick ,title, filterType}: { plans: NursingPlan[], onCardClick: (plan: NursingPlan) => void , title: string, filterType: 'Scheduled' | 'Completed' }) {
   return (
     <section className={styles.nursingPlanSection}>
-       {/* ↓↓↓↓ 使用传入的动态标题 ↓↓↓↓ */}
       <h2 className={styles.planHeader}>{title}</h2>
       <div className={styles.planList}>
         {plans.length > 0 ? (
           plans.map(plan => (
-            <div key={plan.planId} className={styles.planCard} onClick={() => onCardClick(plan)}>
+            // 在卡片上增加一个状态相关的 class，方便用 CSS 区分样式
+            <div key={plan.planId} className={`${styles.planCard} ${styles['status' + plan.evaluationStatus]}`} onClick={() => onCardClick(plan)}>
               <p><strong>老人ID:</strong> {plan.elderlyId}</p>
               <p><strong>护理类型:</strong> {plan.careType}</p>
-              <p><strong>优先级:</strong> {plan.priority}</p>
+              <p><strong>当前状态:</strong> {plan.evaluationStatus}</p> {/* 可以在列表页直接显示状态 */}
               <p><strong>开始时间:</strong> {new Date(plan.planStartDate).toLocaleString()}</p>
-              {/* ↓↓↓↓ 新增的交互按钮 ↓↓↓↓ */}
               <button className={`${styles.button} ${styles.viewPlanBtn}`}>
-                {/* ↓↓↓↓ 核心修改：使用三元运算符来动态决定按钮文本 ↓↓↓↓ */}
                 {filterType === 'Scheduled' ? '查看详情 / 完成' : '查看详情'}
               </button>
             </div>
           ))
         ) : (
-          <p className={styles.noPlansMessage}>{`当前没有${title.includes('Scheduled') ? '待完成' : '已完成'}的护理计划。`}</p>
+          <p className={styles.noPlansMessage}>{`当前没有${title.includes('待完成') ? '待完成' : '已完成'}的护理计划。`}</p>
         )}
       </div>
     </section>
   );
 }
+
 // ---------------------------
-// -- ↓↓↓↓ 新增子组件：护理计划详情模态框 ↓↓↓↓
+// -- 子组件：护理计划详情模态框
 // ---------------------------
 function NursingPlanModal({ plan, onClose, onComplete,isCompletedView  }: { plan: NursingPlan, onClose: () => void, onComplete: () => void,isCompletedView: boolean  }) {
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-        {/* ↓↓↓↓ 标题也可以根据状态动态变化 ↓↓↓↓ */}
         <h2>{isCompletedView ? '已完成计划详情' : '护理计划详情'}</h2>
         <div className={styles.planDetails}>
           <p><strong>计划 ID:</strong> {plan.planId}</p>
@@ -349,7 +333,7 @@ function NursingPlanModal({ plan, onClose, onComplete,isCompletedView  }: { plan
         </div>
         <div className={styles.modalActions}>
           <button className={`${styles.button} ${styles.cancelBtn}`} onClick={onClose}>关闭</button>
-          {/* ↓↓↓↓ 核心修改：只有在非“已完成”视图下，才渲染这个按钮 ↓↓↓↓ */}
+          {/* 只有在 "待完成" 视图下才显示 "标记为完成" 按钮 */}
           {!isCompletedView && (
             <button className={`${styles.button} ${styles.completeBtn}`} onClick={onComplete}>
               标记为完成
