@@ -62,7 +62,7 @@ export function StaffManagementPage() {
       const data: StaffInfo[] = await response.json();
 
       // **CORE LOGIC 1: Filter out "主管" (Manager) position right after fetching**
-      const filteredData = data.filter(staff => staff.position !== '主管');
+      const filteredData = data.filter(staff => staff.position !== 'Supervisor');
       
       // **CORE LOGIC 2: Set the master list with this clean data**
       setMasterStaffList(filteredData);
@@ -167,7 +167,7 @@ export function StaffManagementPage() {
 
     const isEditing = modalMode === 'edit'; 
     const url = isEditing
-      ? `/api-staff/staff-info/staff/${editingStaff.staffId}`
+      ? `/api-staff/staff-info/staff-infos/${editingStaff.staffId}`
       : '/api-staff/staff-info/staff';
     const method = isEditing ? 'PUT' : 'POST';
     

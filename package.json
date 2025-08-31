@@ -2,6 +2,7 @@
   "name": "smart-elderly-care",
   "private": true,
   "scripts": {
+  "build": "pnpm -r --parallel build",
   "dev": "pnpm -r --parallel --filter ./apps/portal-app --filter ./apps/elderly-app --filter ./apps/family-app --filter ./apps/staff-app --filter ./apps/visitor-app dev",
     "dev:portal": "pnpm --filter=portal-app dev",
     "dev:elderly": "pnpm --filter=elderly-app dev",

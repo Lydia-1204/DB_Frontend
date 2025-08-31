@@ -2,6 +2,7 @@ import React,{JSX} from 'react'; // 确保导入 React 以支持 JSX
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoginPage } from './pages/Login/LoginPage.tsx';
 import type { StaffInfo } from '@smart-elderly-care/types';
+import { ChangePasswordPage } from './pages/Login/ChangePasswordPage'; // 导入新页面
 
 // 主管端组件
 import { SupervisorLayout } from './pages/Supervisor/SupervisorLayout.tsx';
@@ -78,7 +79,8 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      
+      <Route path="/change-password" element={<ChangePasswordPage />} />
+
       {/* --- 主管界面路由组 --- */}
       <Route 
         path="/supervisor" 

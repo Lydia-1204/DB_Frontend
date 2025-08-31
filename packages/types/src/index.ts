@@ -446,8 +446,8 @@ export interface Device {
   deviceType: string;
   installationDate: string; // ISO Date String
   status: string;
-  roomId: number | null;
-  description: string | null;
+  roomId: number ;
+  description: string ;
   location: string;
   lastMaintenanceDate: string | null; // ISO Date String
   createdAt: string; // ISO Date String
