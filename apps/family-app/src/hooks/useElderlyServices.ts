@@ -114,7 +114,7 @@ export const useElderlyServices = (elderlyId?: number) => {
         console.error('Diet API failed:', {
           status: dietRes.status,
           statusText: dietRes.statusText,
-          url: `http://47.96.238.102:7000/api/DietRecommendation/${effectiveElderlyId}`,
+          url: `/api/DietRecommendation/${effectiveElderlyId}`,
           elderlyId: effectiveElderlyId
         });
       }

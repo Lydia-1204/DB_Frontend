@@ -1,0 +1,360 @@
+# 定义 worker 进程数，通常设置为 CPU 核心数
+worker_processes auto;
+
+# 定义错误日志路径和级别
+# 注意：请确保 C:/nginx/logs 目录存在
+error_log  C:/nginx/logs/error.log warn;
+
+events {
+    # 每个 worker 进程的最大连接数
+    worker_connections 1024;
+}
+
+http {
+    # 包含 MIME 类型定义文件
+    include       mime.types;
+    # 默认文件类型
+    default_type  application/octet-stream;
+
+    # 定义日志格式
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$request_time" "$upstream_response_time"';
+
+    # 开启高效文件传输模式
+    sendfile        on;
+    tcp_nopush      on;
+
+    # 连接超时时间
+    keepalive_timeout  65;
+
+    # 隐藏 Nginx 版本号
+    server_tokens off;
+
+    # 开启 Gzip 压缩
+    gzip on;
+    gzip_min_length 1k;
+    gzip_comp_level 5;
+    gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
+
+    # ================= CORS (跨域) 配置 =================
+    # 动态映射允许的来源，只有匹配的来源才会添加 CORS 头部
+    # 这里的正则表达式匹配了你的所有前端应用端口
+    map $http_origin $cors_allow_origin {
+        default "";
+        "~^http://47\.96\.238\.102(:5173|:5174|:5175|:5176|:4300)?$" $http_origin;
+    }
+
+    # ================= 后端服务上游 (Upstreams) =================
+    # 这样做可以方便地管理后端服务地址，避免在多处重复写入
+    upstream backend_7000 { server localhost:7000; } # 账户、老人信息、餐饮等
+    upstream backend_8000 { server localhost:8000; } # 活动、医嘱、语音提醒等
+    upstream backend_5000 { server localhost:5000; } # 员工、护理计划、SOS等
+    upstream backend_3003 { server localhost:3003; } # 健康监测、设备、房间等
+    upstream backend_9000 { server localhost:9000; } # 公告、访客等
+
+    # ================= 通用 API 代理配置 =================
+    # 将通用的代理设置和 CORS 头设置提取到单独的文件中，方便复用
+    # 创建一个名为 "cors_proxy.conf" 的文件，内容如下：
+    #
+    # if ($cors_allow_origin != "") {
+    #     add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+    #     add_header 'Access-Control-Allow-Credentials' 'true' always;
+    #     add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+    #     add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+    # }
+    # if ($request_method = 'OPTIONS') {
+    #     return 204;
+    # }
+    # proxy_set_header Host $host;
+    # proxy_set_header X-Real-IP $remote_addr;
+    # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    # proxy_set_header X-Forwarded-Proto $scheme;
+    #
+    # 注意：由于这里无法创建多个文件，我将直接在每个 location 中重复这些配置。
+    # 在实际使用中，强烈建议使用 `include cors_proxy.conf;` 来简化。
+
+    # ================= 前端应用服务 =================
+
+    # --- Elderly App (老人端) ---
+    server {
+        listen 5173;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/elderly.access.log main;
+        root "C:/inetpub/Front/elderly-app";
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # API 代理
+        location /api/ {
+            # 预检请求处理
+            if ($request_method = 'OPTIONS') {
+               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+               add_header 'Access-Control-Allow-Credentials' 'true' always;
+               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+               add_header 'Access-Control-Max-Age' 86400;
+               return 204;
+            }
+
+            # 实际请求处理 - 添加 CORS 头
+            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+            # 代理通用头（Host 使用上游地址，避免后端因 Host 校验返回 400 Invalid Hostname）
+            # $host 为客户端请求的主机（47.96.238.102:5173），部分后端(如 ASP.NET Core AllowedHosts)会拒绝。
+            # $proxy_host 为 proxy_pass 解析出的上游主机:端口（如 backend_7000 -> localhost:7000）。
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 根据 Vite 配置进行精细分流
+            if ($request_uri ~* "/api/(ElderlyRecord|Family)") {
+                proxy_pass http://backend_7000;
+                break;
+            }
+            if ($request_uri ~* "/api/(VoiceReminder|MedicalOrder|ActivityParticipation)") {
+                proxy_pass http://backend_8000;
+                break;
+            }
+            if ($request_uri ~* "/api/(EmergencySOS|staff-info)") {
+                proxy_pass http://backend_5000;
+                break;
+            }
+            if ($request_uri ~* "/api/HealthMonitoring") {
+                proxy_pass http://backend_3003;
+                break;
+            }
+            if ($request_uri ~* "/api/SystemAnnouncement") {
+                proxy_pass http://backend_9000;
+                break;
+            }
+            
+            # 默认兜底到 7000 端口
+            proxy_pass http://backend_7000;
+        }
+    }
+
+    # --- Family App (家属端) ---
+    server {
+        listen 5174;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/family.access.log main;
+        root "C:/inetpub/Front/family-app";
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # API 代理
+        location /api/ {
+            # 预检请求处理
+            if ($request_method = 'OPTIONS') {
+               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+               add_header 'Access-Control-Allow-Credentials' 'true' always;
+               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+               add_header 'Access-Control-Max-Age' 86400;
+               return 204;
+            }
+
+            # 实际请求处理 - 添加 CORS 头
+            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+            # 代理通用头（同上说明）
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 根据 Vite 配置进行精细分流
+            if ($request_uri ~* "/api/(ElderlyRecord|Family)") {
+                proxy_pass http://backend_7000;
+                break;
+            }
+            if ($request_uri ~* "/api/(VoiceReminder|MedicalOrder|ActivityParticipation)") {
+                proxy_pass http://backend_8000;
+                break;
+            }
+            if ($request_uri ~* "/api/(EmergencySOS|staff-info)") {
+                proxy_pass http://backend_5000;
+                break;
+            }
+            if ($request_uri ~* "/api/HealthMonitoring") {
+                proxy_pass http://backend_3003;
+                break;
+            }
+            if ($request_uri ~* "/api/SystemAnnouncement") {
+                proxy_pass http://backend_9000;
+                break;
+            }
+            
+            # 默认兜底到 7000 端口 (包含 Family, Account 等)
+            proxy_pass http://backend_7000;
+        }
+    }
+
+    # --- Staff App (员工端) ---
+    server {
+        listen 5175;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/staff.access.log main;
+        root "C:/inetpub/Front/staff-app";
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # API 代理
+        location /api/ {
+            # 预检请求处理
+            if ($request_method = 'OPTIONS') {
+               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+               add_header 'Access-Control-Allow-Credentials' 'true' always;
+               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+               add_header 'Access-Control-Max-Age' 86400;
+               return 204;
+            }
+
+            # 实际请求处理 - 添加 CORS 头
+            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+            # 代理通用头（同上说明）
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 根据你的原始配置进行分流
+            if ($request_uri ~* "/api/(SystemAnnouncement|VisitorRegistration)") {
+                proxy_pass http://backend_9000;
+                break;
+            }
+            if ($request_uri ~* "/api/(Activity|ActivityParticipation)") {
+                proxy_pass http://backend_8000;
+                break;
+            }
+            if ($request_uri ~* "/api/(EmergencySOS|staff-info|api-staff)") { # api-staff 也归到 5000
+                proxy_pass http://backend_5000;
+                break;
+            }
+             if ($request_uri ~* "/api/(api-device|api-room)") { # device/room 归到 3003
+                proxy_pass http://backend_3003;
+                break;
+            }
+            
+            # 默认兜底到 7000 端口
+            proxy_pass http://backend_7000;
+        }
+    }
+
+    # --- Visitor App (访客端) ---
+    server {
+        listen 5176;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/visitor.access.log main;
+        root "C:/inetpub/Front/visitor-app";
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # API 代理 (访客端比较简单，直接代理到 9000)
+        location /api/ {
+            # 预检请求处理
+            if ($request_method = 'OPTIONS') {
+               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+               add_header 'Access-Control-Allow-Credentials' 'true' always;
+               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+               add_header 'Access-Control-Max-Age' 86400;
+               return 204;
+            }
+
+            # 实际请求处理 - 添加 CORS 头
+            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+            # 访客端同样修改 Host
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://backend_9000;
+        }
+    }
+
+    # --- Portal App (门户) ---
+    server {
+        listen 4300;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/portal.access.log main;
+        root "C:/inetpub/Front/portal-app";
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+
+    # --- Unified API Gateway (可选：将前端 /api 请求指向 5200，避免端口混杂导致后端 Host 解析 400) ---
+    # 用法：
+    #  1. 保持前端继续使用相对路径 /api/... 即可（现有 5173 等 server 已能处理）。
+    #  2. 若仍出现 400 Invalid Hostname，可尝试在前端 Nginx 的 5173 等 server 块里把 /api/ 代理删除，
+    #     并改成通过内部转发到 http://47.96.238.102:5200/api/... （或直接在浏览器调试访问 5200 验证后端 Host）。
+    # 原理：强制转发时使用固定 Host 头 47.96.238.102（不带 5173 端口），避免后端（IIS / ASP.NET）按端口进行 site binding 检查后报 400。
+    server {
+        listen 5200;
+        server_name 47.96.238.102;
+        access_log C:/nginx/logs/api-gateway.access.log main;
+
+        location /api/ {
+            if ($request_method = 'OPTIONS') {
+               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+               add_header 'Access-Control-Allow-Credentials' 'true' always;
+               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+               add_header 'Access-Control-Max-Age' 86400;
+               return 204;
+            }
+
+            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+
+            # 固定 Host，使后端看到 47.96.238.102（不包含前端端口 5173/5174），解决 Invalid Hostname
+            proxy_set_header Host 47.96.238.102;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 与前端各 server 中一致的分流规则
+            if ($request_uri ~* "/api/(ElderlyRecord|Family)") {
+                proxy_pass http://backend_7000;
+                break;
+            }
+            if ($request_uri ~* "/api/(VoiceReminder|MedicalOrder|ActivityParticipation)") {
+                proxy_pass http://backend_8000;
+                break;
+            }
+            if ($request_uri ~* "/api/(EmergencySOS|staff-info|api-staff)") {
+                proxy_pass http://backend_5000;
+                break;
+            }
+            if ($request_uri ~* "/api/(HealthMonitoring|api-device|api-room)") {
+                proxy_pass http://backend_3003;
+                break;
+            }
+            if ($request_uri ~* "/api/(SystemAnnouncement|VisitorRegistration)") {
+                proxy_pass http://backend_9000;
+                break;
+            }
+
+            proxy_pass http://backend_7000; # 默认兜底
+        }
+    }
+}
