@@ -125,10 +125,16 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
 // 老人参与活动项目类型
 interface ElderlyParticipationItemDto {
+  participation_id: number;
   activity_id: number;
   activity_name?: string;
   activity_date?: string;
-  // 可能还有其他字段，根据实际API返回添加
+  activity_time?: string;
+  location?: string;
+  raw_status?: string;
+  display_status: string;
+  registration_time?: string;
+  check_in_time?: string | null;
 }
 
 interface ActivityScheduleIReadOnlyListApiResponse {
@@ -154,20 +160,21 @@ const fetchActivities = async (
   return result.data || [];
 };
 
-// 获取老人已报名的活动ID列表
-const fetchElderlyParticipations = async (elderlyId: number): Promise<number[]> => {
+// 获取老人已报名的活动信息列表
+const fetchElderlyParticipations = async (elderlyId: number): Promise<ElderlyParticipationItemDto[]> => {
   const res = await fetch(`/api/ActivityParticipation/by-elderly/${elderlyId}`);
   if (!res.ok) throw new Error('获取报名信息失败');
   const participations: ElderlyParticipationItemDto[] = await res.json();
-  return participations.map(p => p.activity_id);
+  return participations;
 };
 
 
 const ActivityCenter: React.FC<ActivityCenterProps> = ({ user }) => {
   const [activities, setActivities] = useState<ActivitySchedule[]>([]);
+  const [allActivities, setAllActivities] = useState<ActivitySchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [registeredActivityIds, setRegisteredActivityIds] = useState<number[]>([]);
+  const [elderlyParticipations, setElderlyParticipations] = useState<ElderlyParticipationItemDto[]>([]);
   
   // 弹窗状态
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -178,15 +185,45 @@ const ActivityCenter: React.FC<ActivityCenterProps> = ({ user }) => {
 
   // 判断当前用户是否已报名该活动
   const isRegistered = (activityId: number) => {
-    return registeredActivityIds.includes(activityId);
+    return elderlyParticipations.some(p => p.activity_id === activityId);
   };
 
-  // 加载已报名活动ID列表
+  // 判断当前用户对该活动的display_status是否为"已参与"
+  const isParticipated = (activityId: number) => {
+    const participation = elderlyParticipations.find(p => p.activity_id === activityId);
+    return participation?.display_status === '已参加';
+  };
+
+  // 过滤活动列表
+  const filterActivities = () => {
+    if (allActivities.length === 0) return;
+    
+    // 过滤条件：
+    // 1. 活动状态为"报名中"
+    // 2. 老人对于该活动的display_status不为"已参与"
+    const filteredActivities = allActivities.filter((activity) => {
+      // 首先检查活动状态是否为"报名中"
+      if (activity.status !== '报名中') {
+        return false;
+      }
+      
+      // 检查老人是否已经参与过该活动（display_status为"已参与"）
+      if (isParticipated(activity.activity_id)) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    setActivities(filteredActivities);
+  };
+
+  // 加载已报名活动信息列表
   const loadRegisteredActivities = async () => {
     if (!elderlyId) return;
     try {
-      const participatedIds = await fetchElderlyParticipations(elderlyId);
-      setRegisteredActivityIds(participatedIds);
+      const participations = await fetchElderlyParticipations(elderlyId);
+      setElderlyParticipations(participations);
     } catch (e: any) {
       console.error('获取报名信息失败:', e.message);
     }
@@ -285,13 +322,13 @@ const ActivityCenter: React.FC<ActivityCenterProps> = ({ user }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // 同时加载活动列表和已报名活动ID
+        // 同时加载活动列表和已报名活动信息
         const [activitiesData] = await Promise.all([
           fetchActivities(),
           elderlyId ? loadRegisteredActivities() : Promise.resolve()
         ]);
         
-        setActivities(activitiesData.filter((a) => a.status === '报名中'));
+        setAllActivities(activitiesData);
         setError(null);
       } catch (e: any) {
         setError(e.message);
@@ -302,6 +339,12 @@ const ActivityCenter: React.FC<ActivityCenterProps> = ({ user }) => {
 
     loadData();
   }, [elderlyId]);
+
+  // 当所有活动数据或老人参与信息更新时，重新过滤活动列表
+  useEffect(() => {
+    filterActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allActivities, elderlyParticipations]);
 
   return (
     <div style={{ background: '#fff', padding: 24, borderRadius: 12, boxShadow: '0 2px 8px #f0f1f2' }}>

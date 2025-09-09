@@ -242,6 +242,7 @@ function App() {
             >
               💊 用药提醒
             </button>
+            {/*
             <button 
               className={`px-4 py-2 rounded-lg font-medium transition-all border-2 ${
                 activeTab === 'voice' 
@@ -252,6 +253,7 @@ function App() {
             >
               🔊 语音提醒
             </button>
+            */}
             <button 
               className={`px-4 py-2 rounded-lg font-medium transition-all border-2 ${
                 activeTab === 'diet' 

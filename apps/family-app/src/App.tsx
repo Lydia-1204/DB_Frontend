@@ -34,6 +34,9 @@ function App() {
   const [showNursingApply, setShowNursingApply] = useState(false);
   const { user, loading, login, logout, changePassword } = useElderlyAuth();
   
+  // 添加调试信息
+  console.log('App.tsx: useElderlyAuth状态:', { user, loading, elderlyId: user?.elderlyId });
+  
   // 只有登录用户才获取数据
   const elderlyData = useElderlyServices(user?.elderlyId);
   
@@ -42,7 +45,7 @@ function App() {
     healthAssessments,
     medications,
     nursingPlans,
-    activities,
+    activityParticipations,
     dietPlans,
     loading: dataLoading,
   error: dataError,
@@ -80,50 +83,6 @@ function App() {
   // 刷新数据
   const handleRefresh = () => {
     refetch();
-  };
-
-  // 处理活动报名
-  const handleActivityRegister = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动报名成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动报名失败:', error);
-    }
-  };
-
-  // 处理活动取消
-  const handleActivityCancel = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动取消成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动取消失败:', error);
-    }
   };
 
   // 等待持久化恢复
@@ -246,7 +205,7 @@ function App() {
               todayMedications={medications}
               latestHealth={healthData}
               healthAssessments={healthAssessments}
-              activities={activities}
+              activityParticipations={activityParticipations}
               dietPlansFull={dietPlans as any}
               currentFamily={user.familyInfos?.find(f => f.familyId === user.familyId) || (user.familyId ? {
                 familyId: user.familyId,
@@ -258,8 +217,6 @@ function App() {
                 address: user.address,
                 isPrimaryContact: 'Y'
               } : null)}
-              onActivityRegister={handleActivityRegister}
-              onActivityCancel={handleActivityCancel}
               loadingAssessments={dataLoading}
               assessmentsError={dataError}
             />

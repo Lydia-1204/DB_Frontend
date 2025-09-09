@@ -63,6 +63,20 @@ export interface ActivitySchedule {
   photos?: string[];
 }
 
+// 活动参与情况的接口
+export interface ActivityParticipation {
+  participation_id: number;
+  activity_id: number;
+  activity_name: string;
+  activity_date: string;
+  activity_time: string;
+  location: string;
+  raw_status: string;
+  display_status: string;
+  registration_time: string;
+  check_in_time: string | null;
+}
+
 export interface DietRecommendation {
   id: string;
   elderlyId: string;

@@ -1,5 +1,5 @@
 // Elder service for handling API calls related to elderly records
-import type { HealthAssessment, HealthMonitoring } from '../types';
+import type { HealthAssessment, HealthMonitoring, ActivityParticipation } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -224,6 +224,41 @@ export const elderlyService = {
       }));
     } catch (error) {
       console.error('Failed to fetch health assessments:', error);
+      return [];
+    }
+  },
+
+  // 获取活动参与情况
+  async getActivityParticipations(elderlyId: number): Promise<ActivityParticipation[]> {
+    try {
+      console.log(`elderlyService: 获取活动参与情况，老人ID: ${elderlyId}`);
+      
+      const response = await fetch(`/api/ActivityParticipation/by-elderly/${elderlyId}`);
+      console.log('elderlyService: API响应状态:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        console.error('API响应失败:', response.status, response.statusText);
+        return [];
+      }
+
+      // 检查响应的Content-Type
+      const contentType = response.headers.get('content-type');
+      console.log('elderlyService: 响应Content-Type:', contentType);
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('API返回的不是JSON格式，而是:', contentType);
+        const text = await response.text();
+        console.error('响应内容前200字符:', text.substring(0, 200));
+        return [];
+      }
+
+      const data = await response.json();
+      console.log('elderlyService: 成功获取活动参与数据:', data);
+      
+      // 确保返回的数据符合 ActivityParticipation 接口
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('获取活动参与情况失败:', error);
       return [];
     }
   }
