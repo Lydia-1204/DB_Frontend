@@ -56,7 +56,7 @@ export const useElderlyServices = (elderlyId?: number) => {
         activitiesRes,
         dietRes,
       ] = await Promise.all([
-        fetch(`/api/MedicalOrder/by-elderly/${effectiveElderlyId}`),
+        fetch(`/api/medical/orders/by-elderly/${effectiveElderlyId}`),
         elderlyService.getNursingPlans(effectiveElderlyId),
         fetch(`/api/ActivityParticipation/ByElder/${effectiveElderlyId}`),
         fetch(`/api/DietRecommendation/${effectiveElderlyId}`)

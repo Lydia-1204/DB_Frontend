@@ -78,7 +78,7 @@ export const MedicationReminder: React.FC<MedicationReminderProps> = ({ medicati
                 <div className="space-y-3 text-base bg-white p-4 rounded-lg border border-blue-200">
                   <div className="flex">
                     <span className="text-blue-600 w-24 shrink-0 font-medium">开药时间:</span>
-                    <span className="text-blue-800 leading-snug">{new Date(medication.startDate).toLocaleString('zh-CN')}</span>
+                    <span className="text-blue-800 leading-snug">{new Date(medication.orderDate || medication.startDate).toLocaleString('zh-CN')}</span>
                   </div>
                   {medication.instructions && (
                     <div className="flex">

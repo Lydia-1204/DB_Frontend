@@ -13,6 +13,22 @@ import { elderlyService } from '../services/elderlyService';
 
 // 已移除本地 mock，失败时返回空数组并记录错误
 
+// 安全的 JSON 解析函数
+const safeJsonParse = async (response: Response): Promise<any> => {
+  try {
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      console.warn('Empty response body, returning empty array');
+      return [];
+    }
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    console.error('Failed to parse response as JSON');
+    return [];
+  }
+};
+
 export const useElderlyServices = (elderlyId?: number) => {
   // 使用真实登录传入的 elderlyId；若未登录则不请求
   const effectiveElderlyId = elderlyId != null ? elderlyId : 0;
@@ -62,9 +78,9 @@ export const useElderlyServices = (elderlyId?: number) => {
         remindersRes,
         emergencyRes
       ] = await Promise.all([
-        fetch(`/api/MedicalOrder/by-elderly/${effectiveElderlyId}`),
+        fetch(`/api/medical/orders?elderly_id=${effectiveElderlyId}`),
         elderlyService.getNursingPlans(effectiveElderlyId),
-        fetch(`/api/ActivityParticipation/ByElder/${effectiveElderlyId}`),
+        fetch(`/api/ActivityParticipation/by-elderly/${effectiveElderlyId}`),
         fetch(`/api/DietRecommendation/${effectiveElderlyId}`),
         fetch(`/api/VoiceReminder/by-elder/${effectiveElderlyId}`),
         fetch(`/api/EmergencySOS/all`)
@@ -83,11 +99,11 @@ export const useElderlyServices = (elderlyId?: number) => {
       });
 
       const [medicationsData, activitiesData, dietData, remindersData, emergencyData] = await Promise.all([
-        medicationsRes.ok ? medicationsRes.json() : Promise.resolve([]),
-        activitiesRes.ok ? activitiesRes.json() : Promise.resolve([]),
-        dietRes.ok ? dietRes.json() : Promise.resolve([]),
-        remindersRes.ok ? remindersRes.json() : Promise.resolve([]),
-        emergencyRes.ok ? emergencyRes.json() : Promise.resolve([])
+        medicationsRes.ok ? safeJsonParse(medicationsRes) : Promise.resolve([]),
+        activitiesRes.ok ? safeJsonParse(activitiesRes) : Promise.resolve([]),
+        dietRes.ok ? safeJsonParse(dietRes) : Promise.resolve([]),
+        remindersRes.ok ? safeJsonParse(remindersRes) : Promise.resolve([]),
+        emergencyRes.ok ? safeJsonParse(emergencyRes) : Promise.resolve([])
       ]);
 
       // 设置健康监控数据
@@ -96,21 +112,22 @@ export const useElderlyServices = (elderlyId?: number) => {
       // 设置健康评估数据
       setHealthAssessments(healthAssessmentsData);
       
-      // 适配新的用药返回格式 (orderId, medicineId, orderDate, dosage, frequency, duration ...)
+      // 适配新的用药返回格式 (order_id, elderly_id, medicine_id, order_date, dosage, frequency, duration)
       const mappedMedications = Array.isArray(medicationsData)
         ? medicationsData.map((m: any) => {
             return {
-              id: String(m.orderId ?? m.id ?? ''),
-              elderlyId: String(m.elderlyId ?? effectiveElderlyId),
-              medicineName: m.medicineName || `药物ID ${m.medicineId ?? ''}`,
+              id: String(m.order_id ?? m.orderId ?? m.id ?? ''),
+              elderlyId: String(m.elderly_id ?? m.elderlyId ?? effectiveElderlyId),
+              medicineName: m.medicineName || `药物ID ${m.medicine_id ?? m.medicineId ?? ''}`,
               dosage: m.dosage || '',
               frequency: m.frequency || '',
-              startDate: m.startDate || m.orderDate || new Date().toISOString(),
-              endDate: m.endDate || m.orderDate || new Date().toISOString(),
-              instructions: m.instructions || m.duration || '',
+              startDate: m.order_date || m.orderDate || m.startDate || new Date().toISOString(),
+              endDate: m.order_date || m.orderDate || m.endDate || new Date().toISOString(),
+              instructions: m.duration || m.instructions || '',
               status: (m.status === '已完成' || m.status === '已暂停') ? m.status : '进行中',
               nextDoseTime: m.nextDoseTime,
-              takenToday: Boolean(m.takenToday)
+              takenToday: Boolean(m.takenToday),
+              orderDate: m.order_date || m.orderDate // 添加开药时间字段
             };
           })
         : [];

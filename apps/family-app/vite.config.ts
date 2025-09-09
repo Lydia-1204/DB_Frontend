@@ -37,8 +37,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
-      '/api/MedicalOrder': {
-        target: 'http://47.96.238.102:8000',
+      '/api/medical/orders': {
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
