@@ -1,183 +1,409 @@
-import React, { useState } from 'react';
-import type { ActivitySchedule } from '../types';
+import React, { useEffect, useState } from 'react';
 
-interface ActivityCenterProps {
-  activities: ActivitySchedule[];
-  onActivityRegister: (activityId: string) => void;
-  onActivityCancel: (activityId: string) => void;
+// 用户接口定义
+interface ElderlyUser {
+  elderlyId: number;
+  name: string;
+  gender: string;
+  birthDate: string;
+  idCardNumber: string;
+  contactPhone: string;
+  address: string;
+  emergencyContact: string;
 }
 
-export const ActivityCenter: React.FC<ActivityCenterProps> = ({
-  activities,
-  onActivityRegister,
-  onActivityCancel
+// 组件Props接口
+interface ActivityCenterProps {
+  user: ElderlyUser | null;
+}
+
+// API返回的活动类型
+interface ActivitySchedule {
+  activity_id: number;
+  activity_name: string;
+  activity_date: string;
+  activity_time: string;
+  location: string;
+  staff_id: number;
+  elderly_participants: any;
+  activity_description: string;
+  status: string;
+}
+
+// 报名参数类型（按照API要求的格式）
+interface ParticipationKeyDto {
+  activity_id: number;
+  elderly_id: number;
+}
+
+// 确认弹窗Props
+interface ConfirmModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmColor?: string;
+}
+
+// 确认弹窗组件
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  isOpen,
+  title,
+  message,
+  confirmText,
+  cancelText,
+  onConfirm,
+  onCancel,
+  confirmColor = '#2563eb'
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('全部');
-  const [selectedActivity, setSelectedActivity] = useState<ActivitySchedule | null>(null);
-
-  const categories = ['全部', '文娱', '健身', '康复', '社交', '教育'];
-  
-  const filteredActivities = selectedCategory === '全部' 
-    ? activities 
-    : activities.filter(activity => activity.category === selectedCategory);
-
-  const upcomingActivities = filteredActivities.filter(activity => 
-    new Date(activity.startTime) > new Date()
-  );
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case '文娱': return '🎭';
-      case '健身': return '🏃‍♂️';
-      case '康复': return '🧘‍♀️';
-      case '社交': return '👥';
-      case '教育': return '📚';
-      default: return '🎯';
-    }
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md border-2 border-blue-100">
-      <h3 className="text-xl font-semibold text-blue-800 mb-4 flex items-center">
-        <span className="text-2xl mr-2 bg-blue-50 p-2 rounded-full border-2 border-blue-200">🎯</span>
-        活动中心
-      </h3>
-
-      {/* 分类筛选 */}
-      <div className="flex flex-wrap gap-2 mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        {categories.map((category) => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 24,
+        minWidth: 400,
+        maxWidth: 500,
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: 16, color: '#1f2937' }}>
+          {title}
+        </h3>
+        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: 24, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+          {message}
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
           <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-200 ${
-              selectedCategory === category
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50 hover:border-blue-400'
-            }`}
+            onClick={onCancel}
+            style={{
+              padding: '8px 16px',
+              border: '1px solid #d1d5db',
+              borderRadius: 6,
+              backgroundColor: 'white',
+              color: '#374151',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
           >
-            {category !== '全部' && <span className="mr-1">{getCategoryIcon(category)}</span>} {category}
+            {cancelText}
           </button>
-        ))}
+          <button
+            onClick={onConfirm}
+            style={{
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: 6,
+              backgroundColor: confirmColor,
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            {confirmText}
+          </button>
+        </div>
       </div>
-
-      {/* 活动列表 */}
-      {upcomingActivities.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-4xl mb-2">📅</div>
-          <p className="text-gray-500">暂无即将开始的活动</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {upcomingActivities.map((activity) => (
-            <div
-              key={activity.id}
-              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-2">{getCategoryIcon(activity.category)}</span>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{activity.activityName}</h4>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                      {activity.category}
-                    </span>
-                  </div>
-                </div>
-                {activity.isRegistered && (
-                  <span className="text-green-600 text-xl">✅</span>
-                )}
-              </div>
-              
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">{activity.description}</p>
-              
-              <div className="space-y-1 text-sm text-gray-500 mb-3">
-                <p>📍 {activity.location}</p>
-                <p>⏰ {new Date(activity.startTime).toLocaleDateString()} {
-                  new Date(activity.startTime).toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
-                }</p>
-                <p>👨‍🏫 {activity.organizer}</p>
-                <p>👥 {activity.currentParticipants}/{activity.capacity}人</p>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedActivity(activity)}
-                  className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
-                >
-                  查看详情
-                </button>
-                {activity.isRegistered ? (
-                  <button
-                    onClick={() => onActivityCancel(activity.id)}
-                    className="flex-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                  >
-                    取消报名
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onActivityRegister(activity.id)}
-                    disabled={activity.currentParticipants >= activity.capacity}
-                    className={`flex-1 px-3 py-2 rounded text-sm ${
-                      activity.currentParticipants >= activity.capacity
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {activity.currentParticipants >= activity.capacity ? '已满' : '报名参加'}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 活动详情弹窗 */}
-      {selectedActivity && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold flex items-center">
-                <span className="text-2xl mr-2">{getCategoryIcon(selectedActivity.category)}</span>
-                {selectedActivity.activityName}
-              </h4>
-              <button
-                onClick={() => setSelectedActivity(null)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-3">
-              <p><strong>活动描述:</strong> {selectedActivity.description}</p>
-              <p><strong>活动时间:</strong> {new Date(selectedActivity.startTime).toLocaleString()} - {new Date(selectedActivity.endTime).toLocaleString()}</p>
-              <p><strong>活动地点:</strong> {selectedActivity.location}</p>
-              <p><strong>组织者:</strong> {selectedActivity.organizer}</p>
-              <p><strong>参与人数:</strong> {selectedActivity.currentParticipants}/{selectedActivity.capacity}人</p>
-              <p><strong>活动类型:</strong> {selectedActivity.category}</p>
-              
-              {selectedActivity.photos && selectedActivity.photos.length > 0 && (
-                <div>
-                  <strong>活动照片:</strong>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {selectedActivity.photos.map((photo, index) => (
-                      <img
-                        key={index}
-                        src={photo}
-                        alt={`活动照片 ${index + 1}`}
-                        className="w-full h-20 object-cover rounded"
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+
+// 老人参与活动项目类型
+interface ElderlyParticipationItemDto {
+  participation_id: number;
+  activity_id: number;
+  activity_name?: string;
+  activity_date?: string;
+  activity_time?: string;
+  location?: string;
+  raw_status?: string;
+  display_status: string;
+  registration_time?: string;
+  check_in_time?: string | null;
+}
+
+interface ActivityScheduleIReadOnlyListApiResponse {
+  data: ActivitySchedule[];
+  code: number;
+  message: string;
+}
+
+const fetchActivities = async (
+  from?: string,
+  to?: string,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<ActivitySchedule[]> => {
+  const params = new URLSearchParams();
+  if (from) params.append('from', from);
+  if (to) params.append('to', to);
+  params.append('page', String(page));
+  params.append('pageSize', String(pageSize));
+  const res = await fetch(`/api/Activity?${params.toString()}`);
+  if (!res.ok) throw new Error('获取活动失败');
+  const result: ActivityScheduleIReadOnlyListApiResponse = await res.json();
+  return result.data || [];
+};
+
+// 获取老人已报名的活动信息列表
+const fetchElderlyParticipations = async (elderlyId: number): Promise<ElderlyParticipationItemDto[]> => {
+  const res = await fetch(`/api/ActivityParticipation/by-elderly/${elderlyId}`);
+  if (!res.ok) throw new Error('获取报名信息失败');
+  const participations: ElderlyParticipationItemDto[] = await res.json();
+  return participations;
+};
+
+
+const ActivityCenter: React.FC<ActivityCenterProps> = ({ user }) => {
+  const [activities, setActivities] = useState<ActivitySchedule[]>([]);
+  const [allActivities, setAllActivities] = useState<ActivitySchedule[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [elderlyParticipations, setElderlyParticipations] = useState<ElderlyParticipationItemDto[]>([]);
+  
+  // 弹窗状态
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<ActivitySchedule | null>(null);
+
+  const elderlyId = user?.elderlyId;
+
+  // 判断当前用户是否已报名该活动
+  const isRegistered = (activityId: number) => {
+    return elderlyParticipations.some(p => p.activity_id === activityId);
+  };
+
+  // 判断当前用户对该活动的display_status是否为"已参与"
+  const isParticipated = (activityId: number) => {
+    const participation = elderlyParticipations.find(p => p.activity_id === activityId);
+    return participation?.display_status === '已参加';
+  };
+
+  // 过滤活动列表
+  const filterActivities = () => {
+    if (allActivities.length === 0) return;
+    
+    // 过滤条件：
+    // 1. 活动状态为"报名中"
+    // 2. 老人对于该活动的display_status不为"已参与"
+    const filteredActivities = allActivities.filter((activity) => {
+      // 首先检查活动状态是否为"报名中"
+      if (activity.status !== '报名中') {
+        return false;
+      }
+      
+      // 检查老人是否已经参与过该活动（display_status为"已参与"）
+      if (isParticipated(activity.activity_id)) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    setActivities(filteredActivities);
+  };
+
+  // 加载已报名活动信息列表
+  const loadRegisteredActivities = async () => {
+    if (!elderlyId) return;
+    try {
+      const participations = await fetchElderlyParticipations(elderlyId);
+      setElderlyParticipations(participations);
+    } catch (e: any) {
+      console.error('获取报名信息失败:', e.message);
+    }
+  };
+
+  // 报名
+  const handleRegister = async (activity: ActivitySchedule) => {
+    if (!elderlyId) return;
+    setLoading(true);
+    try {
+      const requestBody: ParticipationKeyDto = { 
+        activity_id: activity.activity_id, 
+        elderly_id: elderlyId 
+      };
+      const res = await fetch('/api/ActivityParticipation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+      if (!res.ok) throw new Error('报名失败');
+      
+      // 报名成功后重新加载报名信息
+      await loadRegisteredActivities();
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || '报名失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 取消报名
+  const handleCancel = async (activity: ActivitySchedule) => {
+    if (!elderlyId) return;
+    setLoading(true);
+    try {
+      const requestBody: ParticipationKeyDto = { 
+        activity_id: activity.activity_id, 
+        elderly_id: elderlyId 
+      };
+      const res = await fetch('/api/ActivityParticipation', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+      if (!res.ok) throw new Error('取消报名失败');
+      
+      // 取消报名成功后重新加载报名信息
+      await loadRegisteredActivities();
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || '取消报名失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 显示报名确认弹窗
+  const showRegisterConfirm = (activity: ActivitySchedule) => {
+    setSelectedActivity(activity);
+    setShowRegisterModal(true);
+  };
+
+  // 显示取消报名确认弹窗
+  const showCancelConfirm = (activity: ActivitySchedule) => {
+    setSelectedActivity(activity);
+    setShowCancelModal(true);
+  };
+
+  // 确认报名
+  const confirmRegister = () => {
+    if (selectedActivity) {
+      handleRegister(selectedActivity);
+    }
+    setShowRegisterModal(false);
+    setSelectedActivity(null);
+  };
+
+  // 确认取消报名
+  const confirmCancel = () => {
+    if (selectedActivity) {
+      handleCancel(selectedActivity);
+    }
+    setShowCancelModal(false);
+    setSelectedActivity(null);
+  };
+
+  // 取消弹窗
+  const cancelModal = () => {
+    setShowRegisterModal(false);
+    setShowCancelModal(false);
+    setSelectedActivity(null);
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // 同时加载活动列表和已报名活动信息
+        const [activitiesData] = await Promise.all([
+          fetchActivities(),
+          elderlyId ? loadRegisteredActivities() : Promise.resolve()
+        ]);
+        
+        setAllActivities(activitiesData);
+        setError(null);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [elderlyId]);
+
+  // 当所有活动数据或老人参与信息更新时，重新过滤活动列表
+  useEffect(() => {
+    filterActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allActivities, elderlyParticipations]);
+
+  return (
+    <div style={{ background: '#fff', padding: 24, borderRadius: 12, boxShadow: '0 2px 8px #f0f1f2' }}>
+      <h2 style={{ color: '#2563eb', fontWeight: 600, marginBottom: 20 }}>活动中心</h2>
+      {loading && <div>加载中...</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        {activities.slice(0, 8).map((activity) => (
+          <div key={activity.activity_id} style={{ border: '1px solid #eee', padding: 12, borderRadius: 8, minHeight: 120, background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div><strong>活动ID：</strong>{activity.activity_id}</div>
+              <div><strong>活动名称：</strong>{activity.activity_name}</div>
+              <div><strong>活动日期：</strong>{activity.activity_date}</div>
+              <div><strong>活动时间：</strong>{activity.activity_time}</div>
+              <div><strong>地点：</strong>{activity.location}</div>
+              <div><strong>活动描述：</strong>{activity.activity_description}</div>
+              <div><strong>状态：</strong>{activity.status}</div>
+            </div>
+            {elderlyId && activity.status !== '已完成' && (
+              isRegistered(activity.activity_id) ? (
+                <button onClick={() => showCancelConfirm(activity)} disabled={loading} style={{ marginTop: 8, background: '#f87171', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 0', cursor: loading ? 'not-allowed' : 'pointer' }}>
+                  取消报名
+                </button>
+              ) : (
+                <button onClick={() => showRegisterConfirm(activity)} disabled={loading} style={{ marginTop: 8, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 0', cursor: loading ? 'not-allowed' : 'pointer' }}>
+                  报名
+                </button>
+              )
+            )}
+          </div>
+        ))}
+      </div>
+      {activities.length === 0 && !loading && <div style={{ marginTop: 12 }}>暂无报名中的活动</div>}
+      
+      {/* 报名确认弹窗 */}
+      <ConfirmModal
+        isOpen={showRegisterModal}
+        title="确认报名"
+        message={`您确定要报名参加"${selectedActivity?.activity_name}"活动吗？\n\n活动时间：${selectedActivity?.activity_date} ${selectedActivity?.activity_time}\n活动地点：${selectedActivity?.location}`}
+        confirmText="确认报名"
+        cancelText="取消"
+        onConfirm={confirmRegister}
+        onCancel={cancelModal}
+        confirmColor="#2563eb"
+      />
+      
+      {/* 取消报名确认弹窗 */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        title="确认取消报名"
+        message={`您确定要取消报名"${selectedActivity?.activity_name}"活动吗？`}
+        confirmText="确认取消"
+        cancelText="不取消"
+        onConfirm={confirmCancel}
+        onCancel={cancelModal}
+        confirmColor="#f87171"
+      />
+    </div>
+  );
+};
+
+export default ActivityCenter;

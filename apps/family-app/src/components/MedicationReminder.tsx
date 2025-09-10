@@ -49,10 +49,10 @@ export const MedicationReminder: React.FC<MedicationReminderProps> = ({ medicati
         </div>
       ) : (
   <div className="space-y-4 pb-4">
-          {medications.map((medication) => {
+          {medications.map((medication, index) => {
             const nextDose = getNextDoseInfo(medication);
             return (
-              <div key={medication.id} className="border-2 border-blue-100 rounded-lg p-5 bg-blue-50 hover:border-blue-300 transition-all duration-200 text-lg">
+              <div key={`${medication.id}-${medication.elderlyId}-${index}`} className="border-2 border-blue-100 rounded-lg p-5 bg-blue-50 hover:border-blue-300 transition-all duration-200 text-lg">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-semibold text-blue-800 text-xl leading-snug">{medication.medicineName}</h4>

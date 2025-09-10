@@ -11,12 +11,31 @@ import { useElderlyAuth } from './hooks/useElderlyAuth';
 import { useElderlyServices } from './hooks/useElderlyServices';
 
 function App() {
+  // 预约探视跳转逻辑与门户一致：本地开发优先尝试 localhost，再远程；远程访问直接跳远程
+  const isLocalHostEnv = ['localhost','127.0.0.1'].includes(window.location.hostname);
+  const visitorCandidates: string[] = [
+    'http://localhost:5176/',
+    'http://47.96.238.102:5176/'
+  ];
+  const pingUrl = (url: string, timeout = 900): Promise<boolean> => new Promise(resolve => {
+    let done = false; const img = new Image();
+    const timer = setTimeout(()=>{ if(!done){ done=true; try{img.src='';}catch{} resolve(false);} }, timeout);
+    img.onload = () => { if(!done){ done=true; clearTimeout(timer); resolve(true);} };
+    img.onerror = () => { if(!done){ done=true; clearTimeout(timer); resolve(false);} };
+    try { img.src = url.replace(/\/$/, '') + '/favicon.ico?_=' + Date.now(); } catch { clearTimeout(timer); resolve(false);} 
+  });
+  const openVisitor = async () => {
+    if (!isLocalHostEnv) { window.location.href = visitorCandidates[1] || visitorCandidates[0]; return; }
+    for (const c of visitorCandidates) { try { if (await pingUrl(c)) { window.location.href = c; return; } } catch {} }
+    window.location.href = visitorCandidates[visitorCandidates.length - 1];
+  };
   const [activeTab, setActiveTab] = useState('dashboard');
-  // 访客端登录地址（可通过环境变量覆盖）
-  const visitorLoginUrl = (import.meta as any).env?.VITE_VISITOR_URL || 'http://localhost:5176/';
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showNursingApply, setShowNursingApply] = useState(false);
   const { user, loading, login, logout, changePassword } = useElderlyAuth();
+  
+  // 添加调试信息
+  console.log('App.tsx: useElderlyAuth状态:', { user, loading, elderlyId: user?.elderlyId });
   
   // 只有登录用户才获取数据
   const elderlyData = useElderlyServices(user?.elderlyId);
@@ -26,7 +45,7 @@ function App() {
     healthAssessments,
     medications,
     nursingPlans,
-    activities,
+    activityParticipations,
     dietPlans,
     loading: dataLoading,
   error: dataError,
@@ -64,50 +83,6 @@ function App() {
   // 刷新数据
   const handleRefresh = () => {
     refetch();
-  };
-
-  // 处理活动报名
-  const handleActivityRegister = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动报名成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动报名失败:', error);
-    }
-  };
-
-  // 处理活动取消
-  const handleActivityCancel = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动取消成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动取消失败:', error);
-    }
   };
 
   // 等待持久化恢复
@@ -213,8 +188,8 @@ function App() {
             {/* SOS 已移至 header 右侧 */}
             <button
               className="px-4 py-2 rounded-lg font-medium transition-all border-2 text-white border-blue-500 hover:bg-blue-500 hover:border-blue-400"
-              onClick={() => { window.location.href = visitorLoginUrl; }}
-              title="跳转到访客端预约登录页面"
+              onClick={() => { openVisitor(); }}
+              title="跳转到访客端预约登录页面 (本地优先)"
             >🗓️ 预约探视</button>
           </div>
         </div>
@@ -230,7 +205,7 @@ function App() {
               todayMedications={medications}
               latestHealth={healthData}
               healthAssessments={healthAssessments}
-              activities={activities}
+              activityParticipations={activityParticipations}
               dietPlansFull={dietPlans as any}
               currentFamily={user.familyInfos?.find(f => f.familyId === user.familyId) || (user.familyId ? {
                 familyId: user.familyId,
@@ -242,8 +217,6 @@ function App() {
                 address: user.address,
                 isPrimaryContact: 'Y'
               } : null)}
-              onActivityRegister={handleActivityRegister}
-              onActivityCancel={handleActivityCancel}
               loadingAssessments={dataLoading}
               assessmentsError={dataError}
             />

@@ -63,6 +63,20 @@ export interface ActivitySchedule {
   photos?: string[];
 }
 
+// 活动参与情况的接口
+export interface ActivityParticipation {
+  participation_id: number;
+  activity_id: number;
+  activity_name: string;
+  activity_date: string;
+  activity_time: string;
+  location: string;
+  raw_status: string;
+  display_status: string;
+  registration_time: string;
+  check_in_time: string | null;
+}
+
 export interface DietRecommendation {
   id: string;
   elderlyId: string;
@@ -141,4 +155,49 @@ export interface HealthAssessment {
   psychologicalFunction: number;
   cognitiveFunction: number;
   healthGrade: string;
+}
+
+// 房间账单记录接口
+export interface RoomBillingRecord {
+  billingId: number;
+  occupancyId: number;
+  elderlyId: number;
+  elderlyName: string;
+  roomId: number;
+  roomNumber: string;
+  billingStartDate: string;
+  billingEndDate: string;
+  days: number;
+  dailyRate: number;
+  totalAmount: number;
+  paymentStatus: string;
+  paidAmount: number;
+  unpaidAmount: number;
+  billingDate: string;
+  paymentDate: string | null;
+  remarks: string | null;
+  createdDate: string;
+  updatedDate: string;
+}
+
+// 房间账单API响应接口
+export interface RoomBillingResponse {
+  success: boolean;
+  message: string;
+  data: {
+    items: RoomBillingRecord[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  totalCount: number | null;
+}
+
+// 支付请求接口
+export interface PaymentRequest {
+  paymentAmount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  remarks: string;
 }

@@ -4,6 +4,7 @@ import type {
   MedicalOrder, 
   NursingPlan, 
   ActivitySchedule, 
+  ActivityParticipation,
   DietRecommendation,
   HealthAssessment
 } from '../types';
@@ -14,11 +15,17 @@ import { elderlyService } from '../services/elderlyService';
 export const useElderlyServices = (elderlyId?: number) => {
   // 使用真实登录传入的 elderlyId；若未登录则不请求
   const effectiveElderlyId = elderlyId != null ? elderlyId : 0;
+  
+  // 添加调试信息
+  console.log('useElderlyServices: 接收到的elderlyId参数:', elderlyId);
+  console.log('useElderlyServices: effectiveElderlyId:', effectiveElderlyId);
+  
   const [healthData, setHealthData] = useState<HealthMonitoring | null>(null);
   const [healthAssessments, setHealthAssessments] = useState<HealthAssessment[]>([]);
   const [medications, setMedications] = useState<MedicalOrder[]>([]);
   const [nursingPlans, setNursingPlans] = useState<NursingPlan[]>([]);
   const [activities, setActivities] = useState<ActivitySchedule[]>([]);
+  const [activityParticipations, setActivityParticipations] = useState<ActivityParticipation[]>([]);
   const [dietPlans, setDietPlans] = useState<DietRecommendation[]>([]);
   // 语音提醒与紧急呼叫已移除
   const [loading, setLoading] = useState(true);
@@ -38,6 +45,7 @@ export const useElderlyServices = (elderlyId?: number) => {
       setMedications([]);
       setNursingPlans([]);
       setActivities([]);
+      setActivityParticipations([]);
       setDietPlans([]);
   // removed modules
       setLoading(false);
@@ -45,20 +53,19 @@ export const useElderlyServices = (elderlyId?: number) => {
     }
 
     try {
-      // 使用新的服务层获取健康监控数据
+      // 使用新的服务层获取健康监控数据和活动参与情况
       const healthMonitoringData = await elderlyService.getHealthMonitoring(effectiveElderlyId);
       const healthAssessmentsData = await elderlyService.getHealthAssessments(effectiveElderlyId);
+      const activityParticipationsData = await elderlyService.getActivityParticipations(effectiveElderlyId);
       
       // 其他数据的获取保持不变
       const [
         medicationsRes,
         nursingPlansData,
-        activitiesRes,
         dietRes,
       ] = await Promise.all([
-        fetch(`/api/MedicalOrder/by-elderly/${effectiveElderlyId}`),
+        fetch(`/api/medical/orders/by-elderly/${effectiveElderlyId}`),
         elderlyService.getNursingPlans(effectiveElderlyId),
-        fetch(`/api/ActivityParticipation/ByElder/${effectiveElderlyId}`),
         fetch(`/api/DietRecommendation/${effectiveElderlyId}`)
       ]);
 
@@ -68,14 +75,13 @@ export const useElderlyServices = (elderlyId?: number) => {
         healthAssessments: healthAssessmentsData.length,
         medications: { status: medicationsRes.status, ok: medicationsRes.ok },
   nursing: { status: Array.isArray(nursingPlansData) ? 'loaded' : 'empty', ok: true },
-        activities: { status: activitiesRes.status, ok: activitiesRes.ok },
+        activityParticipations: { status: 'loaded', count: activityParticipationsData.length },
         diet: { status: dietRes.status, ok: dietRes.ok },
         // removed reminders & emergency
       });
 
-      const [medicationsData, activitiesData, dietData] = await Promise.all([
+      const [medicationsData, dietData] = await Promise.all([
         medicationsRes.ok ? medicationsRes.json() : Promise.resolve([]),
-        activitiesRes.ok ? activitiesRes.json() : Promise.resolve([]),
         dietRes.ok ? dietRes.json() : Promise.resolve([])
       ]);
 
@@ -91,7 +97,7 @@ export const useElderlyServices = (elderlyId?: number) => {
             return {
               id: String(m.orderId ?? m.id ?? ''),
               elderlyId: String(m.elderlyId ?? effectiveElderlyId),
-              medicineName: m.medicineName || `药物ID ${m.medicineId ?? ''}`,
+              medicineName: m.medicineName || `药物ID ${m.medicine_id ?? m.medicineId ?? ''}`,
               dosage: m.dosage || '',
               frequency: m.frequency || '',
               startDate: m.startDate || m.orderDate || new Date().toISOString(),
@@ -104,8 +110,9 @@ export const useElderlyServices = (elderlyId?: number) => {
           })
         : [];
       setMedications(mappedMedications);
-  setNursingPlans(Array.isArray(nursingPlansData) ? nursingPlansData : []);
-      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+      setNursingPlans(Array.isArray(nursingPlansData) ? nursingPlansData : []);
+      setActivities([]); // 暂时设为空数组，因为我们现在使用activityParticipations
+      setActivityParticipations(activityParticipationsData);
 
       // 饮食数据处理保持不变
       console.debug('Diet API raw response for elderly', effectiveElderlyId, dietData);
@@ -114,7 +121,7 @@ export const useElderlyServices = (elderlyId?: number) => {
         console.error('Diet API failed:', {
           status: dietRes.status,
           statusText: dietRes.statusText,
-          url: `http://47.96.238.102:7000/api/DietRecommendation/${effectiveElderlyId}`,
+          url: `/api/DietRecommendation/${effectiveElderlyId}`,
           elderlyId: effectiveElderlyId
         });
       }
@@ -175,6 +182,7 @@ export const useElderlyServices = (elderlyId?: number) => {
     medications,
     nursingPlans,
     activities,
+    activityParticipations,
     dietPlans,
     // removed: reminders, emergencyHistory
     loading,

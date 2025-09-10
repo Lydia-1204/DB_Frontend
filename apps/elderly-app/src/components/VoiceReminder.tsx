@@ -129,8 +129,8 @@ export const VoiceReminder: React.FC<VoiceReminderProps> = ({
 
                 <div className="text-sm text-gray-500 mb-3">
                   <span>提醒时间: {new Date(reminder.scheduledTime).toLocaleString('zh-CN')}</span>
-                  {reminder.repeatCount > 0 && (
-                    <span className="ml-4">已重复: {reminder.repeatCount}/{reminder.maxRepeat} 次</span>
+                  {((reminder.repeatCount ?? 0) > 0) && (
+                    <span className="ml-4">已重复: {reminder.repeatCount ?? 0}/{reminder.maxRepeat ?? 0} 次</span>
                   )}
                 </div>
 

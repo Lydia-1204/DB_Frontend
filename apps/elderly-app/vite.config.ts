@@ -31,19 +31,25 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
-      '/api/MedicalOrder': {
-        target: 'http://47.96.238.102:8000',
+      '/api/Activity': {
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
       '/api/ActivityParticipation': {
-        target: 'http://47.96.238.102:8000',
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
       // Health monitoring
       '/api/HealthMonitoring': {
         target: 'http://47.96.238.102:3003',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      },
+      // Medical orders
+      '/api/medical': {
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },

@@ -4,6 +4,24 @@ import type { StaffInfo } from '@smart-elderly-care/types';
 import styles from './LoginPage.module.css';
 
 export function LoginPage() {
+  // 统一“返回门户”跳转逻辑
+  const isLocalHostEnv = ['localhost','127.0.0.1'].includes(window.location.hostname);
+  const portalCandidates: string[] = [
+    'http://localhost:4300/',
+    'http://47.96.238.102:4300/'
+  ];
+  const pingUrl = (url: string, timeout = 900): Promise<boolean> => new Promise(resolve => {
+    let done = false; const img = new Image();
+    const timer = setTimeout(()=>{ if(!done){ done=true; try{img.src='';}catch{} resolve(false);} }, timeout);
+    img.onload = () => { if(!done){ done=true; clearTimeout(timer); resolve(true);} };
+    img.onerror = () => { if(!done){ done=true; clearTimeout(timer); resolve(false);} };
+    try { img.src = url.replace(/\/$/, '') + '/favicon.ico?_=' + Date.now(); } catch { clearTimeout(timer); resolve(false);} 
+  });
+  const goPortal = async () => {
+    if (!isLocalHostEnv) { window.location.href = portalCandidates[1] || portalCandidates[0]; return; }
+    for (const c of portalCandidates) { try { if (await pingUrl(c)) { window.location.href = c; return; } } catch {} }
+    window.location.href = portalCandidates[portalCandidates.length - 1];
+  };
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -100,7 +118,7 @@ export function LoginPage() {
       <button
         type="button"
         className={styles.returnPortalBtn}
-        onClick={() => { window.location.href = ((import.meta as any).env?.VITE_PORTAL_URL) || 'http://localhost:4300/'; }}
+        onClick={() => { goPortal(); }}
       >← 返回门户</button>
 
       <div className={styles.leftPanel}>

@@ -14,6 +14,8 @@ interface AppLink {
 
 // 如果提供环境变量则优先使用（方便不同环境统一管理）
 // 例如在 .env.local 中配置： VITE_ELDERLY_URL=http://localhost:5173/
+// 改动：点击入口将按优先级尝试多个候选地址（例如先本地 localhost，再 47.96.238.102），
+//       使用 Image ping 检测可达性以绕过 CORS 限制，找到第一个可达地址后跳转。
 const apps: AppLink[] = [
   {
     id: 'elderly',
@@ -21,7 +23,7 @@ const apps: AppLink[] = [
     title: '老人端',
     desc: '健康监测 / 护理计划 / 用药提醒 / 活动报名 / 紧急呼叫',
     color: '#1d4ed8',
-  href: (import.meta as any).env?.VITE_ELDERLY_URL || 'http://localhost:5173/',
+    href: '',
     roles: ['Elderly']
   },
   {
@@ -30,7 +32,7 @@ const apps: AppLink[] = [
     title: '家属端',
     desc: '老人概览 / 护理查看申请 / 费用结算 / 公告通知 / 探视预约',
     color: '#2563eb',
-  href: (import.meta as any).env?.VITE_FAMILY_URL || 'http://localhost:5174/',
+    href: '',
     roles: ['Family']
   },
   {
@@ -39,19 +41,72 @@ const apps: AppLink[] = [
     title: '员工端',
     desc: '主管/医生/护士/保洁/维修 多角色统一入口（登录后识别）',
     color: '#1e3a8a',
-  href: (import.meta as any).env?.VITE_STAFF_URL || 'http://localhost:5175/',
+    href: '',
     roles: ['Supervisor','Doctor','Nurse','Cleaner','Maintenance']
   },
   {
     id: 'visitor',
     icon: '🧾',
     title: '访客端',
-    desc: '访客登录 / 预约登记 / 批量及单个预约 / 查询记录 / 修改密码',
+    desc: '访客登录 / 预约登记 / 批量预约 / 查询记录 / 修改密码',
     color: '#334155',
-  href: (import.meta as any).env?.VITE_VISITOR_URL || 'http://localhost:5176/',
+    href: '',
     roles: ['Visitor']
   }
 ];
+
+// Helpers: ping URL by loading an image (works cross-origin) with a timeout
+const pingUrl = (url: string, timeout = 1500): Promise<boolean> => {
+  return new Promise(resolve => {
+    let done = false;
+    const img = new Image();
+    const timer = setTimeout(() => { if (!done) { done = true; try { img.src = ''; } catch {} resolve(false); } }, timeout);
+    img.onload = () => { if (!done) { done = true; clearTimeout(timer); resolve(true); } };
+    img.onerror = () => { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
+    // try favicon or root resource
+    try {
+      img.src = url.replace(/\/$/, '') + '/favicon.ico?_=' + Date.now();
+    } catch (e) {
+      clearTimeout(timer);
+      resolve(false);
+    }
+  });
+};
+
+const portMap: Record<string, number> = {
+  elderly: 5173,
+  family: 5174,
+  staff: 5175,
+  visitor: 5176
+};
+
+const getCandidatesFor = (id: string): string[] => {
+  // 当在本机开发时：先尝试 localhost，再远程 IP；否则逻辑上不会被用到（直接跳远程）。
+  const port = portMap[id] || 5173;
+  return [
+    `http://localhost:${port}/`,
+    `http://47.96.238.102:${port}/`
+  ];
+};
+
+const isLocalHostEnv = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+const openBest = async (candidates: string[]) => {
+  // 非本地访问：直接跳远程第二个候选（47.96.238.102）无需探测
+  if (!isLocalHostEnv) {
+    const remote = candidates[1] || candidates[0];
+    window.location.href = remote;
+    return;
+  }
+  // 本地开发：按顺序探测
+  for (const c of candidates) {
+    try {
+      const ok = await pingUrl(c, 900);
+      if (ok) { window.location.href = c; return; }
+    } catch (_) {}
+  }
+  window.location.href = candidates[candidates.length - 1]; // fallback 用远程
+};
 
 export default function PortalApp(){
   const list = apps;
@@ -76,7 +131,7 @@ export default function PortalApp(){
                 <p>{app.desc}</p>
                 <div className="links">
                   <button
-                    onClick={() => { window.location.href = app.href; }}
+                    onClick={() => { openBest(getCandidatesFor(app.id)); }}
                     className="button button-large"
                     style={{
                       background: app.color,

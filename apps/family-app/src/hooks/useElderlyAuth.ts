@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 
-// 在开发模式下使用相对路径，以便 Vite dev server 的 proxy 可以拦截请求并绕过浏览器 CORS 限制。
-// 在生产环境中使用真实的后端地址。
-const API_BASE_URL = import.meta.env.DEV ? '' : 'http://47.96.238.102:7000';
+// 统一使用相对路径，由前端所在域的 Nginx 反向代理到对应后端服务；
+// 避免跨端口导致的 CORS 问题，不再在生产写死 http://47.96.238.102:7000。
+// 若后端网关前缀未来发生变化，只需全局替换此常量。
+const API_BASE_URL = '';
 
 interface ElderlyUser {
   elderlyId: number; // 依然保留 elderlyId 供系统其他模块使用（通过登录返回推断）

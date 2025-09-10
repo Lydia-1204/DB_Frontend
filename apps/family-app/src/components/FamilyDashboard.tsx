@@ -1,6 +1,6 @@
 import React from 'react';
 // Dashboard 仅展示各功能完整内容（已移除简略概览卡片）
-import type { ElderlyProfile, MedicalOrder, HealthMonitoring, HealthAssessment, ActivitySchedule, DietRecommendation } from '../types';
+import type { ElderlyProfile, MedicalOrder, HealthMonitoring, HealthAssessment, ActivityParticipation, DietRecommendation } from '../types';
 import { HealthAssessmentComponent } from './HealthAssessment';
 import { MedicationReminder } from './MedicationReminder';
 import { DietPlan } from './DietPlan';
@@ -23,11 +23,9 @@ interface ElderlyDashboardProps {
   todayMedications: MedicalOrder[];
   latestHealth?: HealthMonitoring | null;
   healthAssessments?: HealthAssessment[];
-  activities?: ActivitySchedule[];
+  activityParticipations?: ActivityParticipation[];
   dietPlansFull?: DietRecommendation[];
   currentFamily?: FamilyInfoLite | null; // 当前登录家属信息
-  onActivityRegister?: (activityId: string) => void;
-  onActivityCancel?: (activityId: string) => void;
   loadingAssessments?: boolean;
   assessmentsError?: string | null;
 }
@@ -37,11 +35,9 @@ export const ElderlyDashboard: React.FC<ElderlyDashboardProps> = ({
   todayMedications,
   latestHealth,
   healthAssessments = [],
-  activities = [],
+  activityParticipations = [],
   dietPlansFull = [],
   currentFamily = null,
-  onActivityRegister,
-  onActivityCancel,
   loadingAssessments = false,
   assessmentsError = null
 }) => {
@@ -103,7 +99,7 @@ export const ElderlyDashboard: React.FC<ElderlyDashboardProps> = ({
           </section>
         </div>
         <section id="activity-center-section">
-          <ActivityCenter activities={activities} onActivityRegister={(id)=>onActivityRegister?.(id)} onActivityCancel={(id)=>onActivityCancel?.(id)} />
+          <ActivityCenter participations={activityParticipations} loading={loadingAssessments} />
         </section>
       </div>
     </div>

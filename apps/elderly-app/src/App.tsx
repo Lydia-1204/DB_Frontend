@@ -6,7 +6,7 @@ import { HealthAssessmentComponent } from './components/HealthAssessment';
 import { MedicationReminder } from './components/MedicationReminder';
 import { VoiceReminder } from './components/VoiceReminder';
 import { DietPlan } from './components/DietPlan';
-import { ActivityCenter } from './components/ActivityCenter';
+import ActivityCenter from './components/ActivityCenter';
 import NursingPlanList from './components/NursingPlanList';
 import NursingPlanApplyForm from './components/NursingPlanApplyForm';
 import { HealthMonitorPanel } from './components/HealthMonitorPanel';
@@ -31,7 +31,6 @@ function App() {
     healthAssessments,
     medications,
     nursingPlans,
-    activities,
     dietPlans,
     reminders,
     loading: dataLoading,
@@ -105,49 +104,7 @@ function App() {
 
   // 饮食计划执行功能已移除：此系统只做显示面板
 
-  // 处理活动报名
-  const handleActivityRegister = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动报名成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动报名失败:', error);
-    }
-  };
-
-  // 处理活动取消
-  const handleActivityCancel = async (activityId: string) => {
-    try {
-  const response = await fetch(`/api/Activity/${activityId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          elderlyId: user?.elderlyId
-        })
-      });
-      
-      if (response.ok) {
-        console.log('活动取消成功');
-        refetch();
-      }
-    } catch (error) {
-      console.error('活动取消失败:', error);
-    }
-  };
+  // 活动报名/取消逻辑已迁移至 ActivityCenter 内部（组件自获取），故此处保留 refetch 用于刷新数据
 
   // 处理紧急呼叫
   const handleEmergencyCall = async (type: string) => {
@@ -285,6 +242,7 @@ function App() {
             >
               💊 用药提醒
             </button>
+            {/*
             <button 
               className={`px-4 py-2 rounded-lg font-medium transition-all border-2 ${
                 activeTab === 'voice' 
@@ -295,6 +253,7 @@ function App() {
             >
               🔊 语音提醒
             </button>
+            */}
             <button 
               className={`px-4 py-2 rounded-lg font-medium transition-all border-2 ${
                 activeTab === 'diet' 
@@ -368,8 +327,8 @@ function App() {
           {activeTab === 'dashboard' && user && (
             <ElderlyDashboard
               profile={user}
-              todayMedications={medications}
-              todayNursing={nursingPlans}
+              todayMedications={Array.isArray(medications) ? medications : []}
+              todayNursing={Array.isArray(nursingPlans) ? nursingPlans : []}
               latestHealth={healthData}
               todayDietCount={Array.isArray(dietPlans) ? dietPlans.length : 0}
             />
@@ -404,11 +363,7 @@ function App() {
           )}
 
           {activeTab === 'activity' && (
-            <ActivityCenter
-              activities={activities}
-              onActivityRegister={handleActivityRegister}
-              onActivityCancel={handleActivityCancel}
-            />
+            <ActivityCenter user={user} />
           )}
 
           {activeTab === 'nursing' && (

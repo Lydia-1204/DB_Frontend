@@ -3,6 +3,22 @@ import type { HealthAssessment, HealthMonitoring } from '../types';
 
 const API_BASE_URL = '/api';
 
+// 安全的 JSON 解析函数
+const safeJsonParse = async (response: Response): Promise<any> => {
+  try {
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      console.warn('Empty response body, returning empty object');
+      return {};
+    }
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    console.error('Failed to parse response as JSON');
+    return {};
+  }
+};
+
 export const elderlyService = {
   // 获取老人档案信息，包括健康评估
   async getElderlyRecord(elderlyId: number) {
@@ -11,7 +27,7 @@ export const elderlyService = {
       if (!response.ok) {
         throw new Error(`Failed to fetch elderly record: ${response.status} ${response.statusText}`);
       }
-      const data = await response.json();
+      const data = await safeJsonParse(response);
       console.debug('ElderlyRecord API response:', data);
       return data;
     } catch (error) {
@@ -27,7 +43,7 @@ export const elderlyService = {
       if (!res.ok) {
         throw new Error(`Failed to fetch nursing plans: ${res.status} ${res.statusText}`);
       }
-      const data = await res.json();
+      const data = await safeJsonParse(res);
       if (!Array.isArray(data)) return [];
       console.debug('[NursingPlans][raw]', data);
       // 只保留 Pending(待确认) 与 Scheduled(待完成) 状态
@@ -102,7 +118,7 @@ export const elderlyService = {
         }
         throw new Error(`Create nursing plan failed: ${res.status} ${res.statusText} ${text}`);
       }
-      const data = await res.json().catch(()=> ({}));
+      const data = await safeJsonParse(res);
       console.debug('[CreateNursingPlan][success]', data);
       return data;
     } catch (err) {
@@ -149,7 +165,7 @@ export const elderlyService = {
         try {
           const historyRes = await fetch(`/api/HealthMonitoring/elderly/${elderlyId}/history`);
           if (historyRes.ok) {
-            const historyJson = await historyRes.json();
+            const historyJson = await safeJsonParse(historyRes);
             if (Array.isArray(historyJson) && historyJson.length > 0) {
               const latest = historyJson[0];
               console.debug('[HealthMonitoring] Fallback latest history record:', latest);
