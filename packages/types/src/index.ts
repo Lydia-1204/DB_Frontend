@@ -276,12 +276,22 @@ export interface MedicineProcurement {
 
 // 文件来源: VoiceAssistantReminder.cs
 export interface VoiceAssistantReminder {
+  // 原后端字段（保持兼容）
   reminder_id: number;
   order_id: number;
   elderly_id: number;
   reminder_time: string; // Corresponds to DateTime
   reminder_count: number;
   reminder_status: string;
+
+  // 前端组件需要的友好字段（用于 UI 和业务逻辑）
+  id?: string; // 前端使用的唯一 id
+  scheduledTime?: string; // 对应 reminder_time
+  reminderStatus?: string; // 对应 reminder_status，值如 '待提醒' | '已提醒' | '已确认'
+  reminderType?: string; // 提醒类型，例如 '服药'、'活动'
+  content?: string; // 提醒展示的文本内容
+  repeatCount?: number; // 已重复次数
+  maxRepeat?: number; // 最大重复次数
 }
 
 // 文件来源: HealthThreshold.cs

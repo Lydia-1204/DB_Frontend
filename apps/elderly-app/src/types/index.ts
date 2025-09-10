@@ -70,7 +70,22 @@ export interface DietRecommendation {
 }
 
 export interface VoiceAssistantReminder {
+  // 与后端原始字段保持兼容
+  reminder_id?: number;
+  order_id?: number;
+  elderly_id?: number;
+  reminder_time?: string;
+  reminder_count?: number;
+  reminder_status?: string;
 
+  // 前端需要的便捷字段
+  id: string;
+  scheduledTime: string; // ISO 字符串
+  reminderStatus: '待提醒' | '已提醒' | '已确认' | '已忽略' | string;
+  reminderType: string; // '服药' | '活动' | ...
+  content: string;
+  repeatCount?: number;
+  maxRepeat?: number;
 }
 
 export interface EmergencySOS {
