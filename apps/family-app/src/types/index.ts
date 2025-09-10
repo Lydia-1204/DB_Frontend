@@ -156,3 +156,48 @@ export interface HealthAssessment {
   cognitiveFunction: number;
   healthGrade: string;
 }
+
+// 房间账单记录接口
+export interface RoomBillingRecord {
+  billingId: number;
+  occupancyId: number;
+  elderlyId: number;
+  elderlyName: string;
+  roomId: number;
+  roomNumber: string;
+  billingStartDate: string;
+  billingEndDate: string;
+  days: number;
+  dailyRate: number;
+  totalAmount: number;
+  paymentStatus: string;
+  paidAmount: number;
+  unpaidAmount: number;
+  billingDate: string;
+  paymentDate: string | null;
+  remarks: string | null;
+  createdDate: string;
+  updatedDate: string;
+}
+
+// 房间账单API响应接口
+export interface RoomBillingResponse {
+  success: boolean;
+  message: string;
+  data: {
+    items: RoomBillingRecord[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+  totalCount: number | null;
+}
+
+// 支付请求接口
+export interface PaymentRequest {
+  paymentAmount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  remarks: string;
+}

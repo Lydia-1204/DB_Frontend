@@ -53,6 +53,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
+      // Room Occupancy and billing endpoints -> port 3003
+      '/api/RoomOccupancy': {
+        target: 'http://47.96.238.102:3003',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      },
       // Emergency and NursingPlan, etc.
       '/api/EmergencySOS': {
         target: 'http://47.96.238.102:5000',

@@ -97,7 +97,7 @@ export const useElderlyServices = (elderlyId?: number) => {
             return {
               id: String(m.orderId ?? m.id ?? ''),
               elderlyId: String(m.elderlyId ?? effectiveElderlyId),
-              medicineName: m.medicineName || `药物ID ${m.medicineId ?? ''}`,
+              medicineName: m.medicineName || `药物ID ${m.medicine_id ?? m.medicineId ?? ''}`,
               dosage: m.dosage || '',
               frequency: m.frequency || '',
               startDate: m.startDate || m.orderDate || new Date().toISOString(),
