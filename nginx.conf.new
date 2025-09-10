@@ -198,59 +198,113 @@ http {
         }
     }
 
-    # --- Staff App (员工端) ---
+    # --- 员工端 App (Staff App) ---
     server {
         listen 5175;
         server_name 47.96.238.102;
         access_log C:/nginx/logs/staff.access.log main;
         root "C:/inetpub/Front/staff-app";
 
+        # Vue/React History 模式路由配置
         location / {
             try_files $uri $uri/ /index.html;
         }
 
-        # API 代理
+        # --- API 代理总入口 ---
+        # 使用前缀匹配 /api/，处理所有后端请求
         location /api/ {
-            # 预检请求处理
+            # --- CORS 跨域预检请求处理 (OPTIONS) ---
             if ($request_method = 'OPTIONS') {
-               add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
-               add_header 'Access-Control-Allow-Credentials' 'true' always;
-               add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
-               add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
-               add_header 'Access-Control-Max-Age' 86400;
-               return 204;
+                add_header 'Access-Control-Allow-Origin' $http_origin always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 86400;
+                return 204;
             }
 
-            # 实际请求处理 - 添加 CORS 头
-            add_header 'Access-Control-Allow-Origin' $cors_allow_origin always;
+            # --- 通用 CORS 和代理头设置 ---
+            add_header 'Access-Control-Allow-Origin' $http_origin always;
             add_header 'Access-Control-Allow-Credentials' 'true' always;
-
-            # 代理通用头（同上说明）
             proxy_set_header Host $proxy_host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
-            # 根据你的原始配置进行分流
+            # --- 根据 Vite 规则进行分流 ---
+
+            # 规则组：代理到 backend_9000
             if ($request_uri ~* "/api/(SystemAnnouncement|VisitorRegistration)") {
                 proxy_pass http://backend_9000;
                 break;
             }
-            if ($request_uri ~* "/api/(Activity|ActivityParticipation)") {
+
+            # 规则组：代理到 backend_6006
+            if ($request_uri ~* "/api/(Activity|ActivityParticipation|medical)") {
                 proxy_pass http://backend_6006;
                 break;
             }
-            if ($request_uri ~* "/api/(EmergencySOS|staff-info|api-staff)") { # api-staff 也归到 5000
+            
+            # 规则组：代理到 backend_5000
+            if ($request_uri ~* "/api/(EmergencySOS|staff-info)") {
                 proxy_pass http://backend_5000;
                 break;
             }
-             if ($request_uri ~* "/api/(api-device|api-room)") { # device/room 归到 3003
-                proxy_pass http://backend_3003;
-                break;
-            }
-            
-            # 默认兜底到 7000 端口
+
+            # 规则组：代理到 backend_7000 (默认兜底)
+            # 此处包含了 ElderlyInfo, CheckIn, DietRecommendation, ElderlyRecord, family 等
             proxy_pass http://backend_7000;
+        }
+
+        # --- 处理带路径重写的特殊 API ---
+
+        # 规则: /api-staff -> /api (代理到 5000)
+        location /api-staff/ {
+            rewrite ^/api-staff/(.*)$ /api/$1 break;
+            proxy_pass http://backend_5000;
+            # 同样添加 CORS 和代理头
+            add_header 'Access-Control-Allow-Origin' $http_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # 规则: /api-device -> /api/DeviceManagement (代理到 3003)
+        location /api-device/ {
+            rewrite ^/api-device/(.*)$ /api/DeviceManagement/$1 break;
+            proxy_pass http://backend_3003;
+            add_header 'Access-Control-Allow-Origin' $http_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # 规则: /api-room -> /api/RoomManagement (代理到 3003)
+        location /api-room/ {
+            rewrite ^/api-room/(.*)$ /api/RoomManagement/$1 break;
+            proxy_pass http://backend_3003;
+            add_header 'Access-Control-Allow-Origin' $http_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # 规则: /api-occupancy -> /api/RoomOccupancy (代理到 3003)
+        location /api-occupancy/ {
+            rewrite ^/api-occupancy/(.*)$ /api/RoomOccupancy/$1 break;
+            proxy_pass http://backend_3003;
+            add_header 'Access-Control-Allow-Origin' $http_origin always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            proxy_set_header Host $proxy_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
 
