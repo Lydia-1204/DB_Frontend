@@ -60,12 +60,16 @@ export default defineConfig({
       },
       // ↓↓↓↓ 新增的活动 API 代理规则 ↓↓↓↓
       '/api/Activity': {
-        target: 'http://47.96.238.102:8000',
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
       },
       // ↓↓↓↓ 新增的活动参与 API 代理规则 ↓↓↓↓
       '/api/ActivityParticipation': {
-        target: 'http://47.96.238.102:8000',
+        target: 'http://47.96.238.102:6006',
+        changeOrigin: true,
+      },
+      '/api/medical':{
+        target: 'http://47.96.238.102:6006',
         changeOrigin: true,
       },
       // ↓↓↓↓ 新增的规则 ↓↓↓↓
@@ -78,6 +82,13 @@ export default defineConfig({
         target: 'http://47.96.238.102:9000',
         changeOrigin: true,
       },
+      // ↓↓↓↓ 新增这条入住与结算的代理规则 ↓↓↓↓
+      '/api-occupancy': {
+        target: 'http://47.96.238.102:3003', // 目标服务器：假设端口是 7001
+        changeOrigin: true,
+        // 重写规则：将 /api-occupancy 替换为 /api/RoomOccupancy
+        rewrite: (path) => path.replace(/^\/api-occupancy/, '/api/RoomOccupancy'),
+      }
       
     }
   }

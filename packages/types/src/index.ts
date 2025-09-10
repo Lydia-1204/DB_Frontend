@@ -575,11 +575,15 @@ export interface MutationApiResponse {
 
 
 export interface Activity {
-  activityId: number;
-  activityName: string;
+  activity_id: number;
+  activity_name: string;
+  activity_date: string; // "2025-09-10T09:56:34"
+  activity_time: string; // "+00 07:00:00.000000"
   location: string;
-  startTime: string; // ISO 日期时间字符串
-  staffId: number;
+  staff_id: number;
+  elderly_participants: string | null;
+  activity_description: string;
+  status: string; // 例如 "报名中"
 }
 
 export interface DisinfectionRecord {
@@ -624,4 +628,114 @@ export interface NewCommentPayload {
   comment: string;
   commenterId: number;
   commenterType: string; // 例如 "员工"
+}
+// --- 为入住与结算功能新增的类型 ---
+
+export interface CheckInDto {
+  elderlyId: number;
+  roomId: number;
+  checkInDate: string; // ISO Date String
+  bedNumber: string;
+  remarks?: string;
+}
+
+export interface CheckOutDto {
+  occupancyId: number;
+  checkOutDate: string; // ISO Date String
+  remarks?: string;
+}
+
+// 假设有一个获取当前入住记录的接口，其单条记录的格式如下
+// 这个接口对于实现一个可用的退房功能至关重要
+export interface OccupancyRecord {
+    occupancyId: number;
+    elderlyId: number;
+    elderlyName: string;
+    roomId: number;
+    roomNumber: string;
+    checkInDate: string; // ISO Date String
+}
+// --- 找到并用下面的版本，替换你已有的 OccupancyRecord 接口 ---
+export interface OccupancyRecord {
+    occupancyId: number;
+    roomId: number;
+    elderlyId: number;
+    roomNumber: string;
+    elderlyName: string;
+    checkInDate: string; // ISO Date String
+    checkOutDate: string | null; // ISO Date String or null
+    status: '入住中' | '已退房' | string; // 明确已知状态，也允许其他未知状态
+    bedNumber: string | null;
+    remarks: string | null;
+    createdDate: string; // ISO Date String
+    updatedDate: string; // ISO Date String
+}
+
+// --- 在文件末尾新增以下接口，用于描述 occupancy-records 的完整响应 ---
+export interface OccupancyApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    items: OccupancyRecord[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  } | null; // 当 success 为 false 时，data 可能为 null
+  totalCount: number | null;
+}
+
+// --- 为账单记录功能新增的类型 ---
+
+// --- 找到并替换已有的 BillingRecord 接口 ---
+export interface BillingRecord {
+  billingId: number; // 注意：字段名是 billingId
+  occupancyId: number;
+  elderlyId: number;
+  elderlyName: string;
+  roomId: number;
+  roomNumber: string;
+  billingStartDate: string; // ISO Date String
+  billingEndDate: string; // ISO Date String
+  days: number;
+  dailyRate: number;
+  totalAmount: number;
+  paymentStatus: '未支付' | '已支付' | string; // 关键修正：字段名是 paymentStatus
+  paidAmount: number;
+  unpaidAmount: number;
+  billingDate: string; // ISO Date String
+  paymentDate: string | null; // ISO Date String or null
+  remarks: string | null;
+  createdDate: string; // ISO Date String
+  updatedDate: string; // ISO Date String
+}
+
+// BillingApiResponse 接口保持不变
+export interface BillingApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    items: BillingRecord[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  } | null;
+  totalCount: number | null;
+}
+export interface ApiResponse<T> {
+  ok: boolean;
+  data: T;
+  message: string | null;
+}
+
+export interface NewMedicalOrderPayload {
+  // 不再需要 orderId，因为这是后端生成的
+  elderly_id: number;
+  staff_id: number;
+  medicine_id: number;
+  order_date: string; // ISO 格式的日期字符串
+  dosage: string;
+  frequency: string;
+  duration: string;
 }

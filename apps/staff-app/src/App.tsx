@@ -12,7 +12,8 @@ import { OperationsPage } from './pages/Supervisor/OperationsPage.tsx';
 import { DisinfectionReportPage } from './pages/Supervisor/DisinfectionReportPage';
 import { DeviceManagementPage } from './pages/Supervisor/DeviceManagementPage';
 import { RoomManagementPage } from './pages/Supervisor/RoomManagementPage';
-import { FeeSettlementPage } from './pages/Supervisor/FeeSettlementPage';
+import { OccupancyManagementPage } from './pages/Supervisor/OccupancyManagementPage.tsx';
+import { BillingRecordsPage } from './pages/Supervisor/BillingRecordsPage.tsx'; // 费用结算页面
 
 // 护士端组件
 import { NurseLayout } from './pages/Nurse/NurseLayout.tsx'; // 假设 NurseLayout 在这个路径
@@ -97,9 +98,10 @@ function App() {
         {/* ↓↓↓↓ 在这里添加新的房间管理路由 ↓↓↓↓ */}
         <Route path="rooms" element={<RoomManagementPage />} />
         {/* ↓↓↓↓ 2. 在这里为费用结算页面添加新的路由规则 ↓↓↓↓ */}
-        <Route path="fee-settlement" element={<FeeSettlementPage />} />
+        <Route path="OccupancyManagementPage" element={<OccupancyManagementPage />} />
         {/* ↓↓↓↓ 集成公告页，并传入角色 'supervisor' ↓↓↓↓ */}
         <Route path="announcements" element={<AnnouncementsPage role="supervisor" />} />
+        <Route path="billing-records" element={<BillingRecordsPage />} />
       </Route>
       
       {/* --- 医生端路由 --- */}
@@ -107,10 +109,12 @@ function App() {
         <Route index element={<DoctorDashboard />} />
         {/* 老人管理列表页 (复用组件) */}
         <Route path="elderly-management" element={<ElderlyManagementPage role="doctor" />} />
+        <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} />
         {/* ↓↓↓↓ 修正：为医生端也加上详情页路由！↓↓↓↓ */}
         <Route path="elderly-management/:elderlyId" element={<ElderlyDetailPage />} />
         {/* ↓↓↓↓ 集成公告页，并传入角色 'doctor' ↓↓↓↓ */}
         <Route path="announcements" element={<AnnouncementsPage role="doctor" />} />
+        
       </Route>
 
       {/* ↓↓↓↓ 我们在这里添加护士端的路由规则 ↓↓↓↓ */}

@@ -189,7 +189,7 @@ export function ElderlyManagementPage({ role }: ElderlyManagementPageProps) {
                 <td>{elderly.elderlyId}</td>
                 <td>{elderly.name}</td>
                 <td>{elderly.gender}</td>
-                <td><button className={styles.button} onClick={() => navigate(`/nurse/elderly-management/${elderly.elderlyId}`)}>查看档案</button></td>
+                <td><button className={styles.button} onClick={() => navigate(`/${role}/elderly-management/${elderly.elderlyId}`)}>查看档案</button></td>
               </tr>
             ))}
           </tbody>
