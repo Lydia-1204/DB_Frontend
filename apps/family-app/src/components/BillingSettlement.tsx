@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import type { BillingRecord, NursingPlan, RoomBillingRecord, RoomBillingResponse, PaymentRequest } from '../types';
+import type { BillingRecord, NursingPlan, RoomBillingRecord, RoomBillingResponse, PaymentRequest, DispenseRecord, DispenseRecordResponse, UpdatePayStatusDto } from '../types';
 
 interface BillingSettlementProps {
   records?: BillingRecord[]; // 现有通用费用记录（可作为药品等示例）
@@ -14,11 +14,15 @@ interface BillingSettlementProps {
 const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId, nursingPlans = [], onPaid }) => {
   const [confirmPlan, setConfirmPlan] = useState<NursingPlan | null>(null);
   const [confirmRoomBilling, setConfirmRoomBilling] = useState<RoomBillingRecord | null>(null);
+  const [confirmMedicineDispense, setConfirmMedicineDispense] = useState<DispenseRecord | null>(null);
   const [paying, setPaying] = useState(false);
   const [nursingPaySuccess, setNursingPaySuccess] = useState<string | null>(null);
   const [roomPaySuccess, setRoomPaySuccess] = useState<string | null>(null);
+  const [medicinePaySuccess, setMedicinePaySuccess] = useState<string | null>(null);
   const [roomBillings, setRoomBillings] = useState<RoomBillingRecord[]>([]);
   const [roomBillingsLoading, setRoomBillingsLoading] = useState(false);
+  const [medicineDispenses, setMedicineDispenses] = useState<DispenseRecord[]>([]);
+  const [medicineDispensesLoading, setMedicineDispensesLoading] = useState(false);
   const [paymentRemarks, setPaymentRemarks] = useState('');
   
   const unpaidPlans = (nursingPlans || []).filter(p => p.elderlyId === elderlyId && p.evaluationStatus === 'Unpaid');
@@ -29,6 +33,7 @@ const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId
   useEffect(() => {
     if (elderlyId) {
       fetchRoomBillings();
+      fetchMedicineDispenses();
     }
   }, [elderlyId]);
 
@@ -53,6 +58,31 @@ const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId
       alert('获取房间账单失败，请稍后重试');
     } finally {
       setRoomBillingsLoading(false);
+    }
+  };
+
+  // 获取药品配发记录数据
+  const fetchMedicineDispenses = async () => {
+    if (!elderlyId) return;
+    try {
+      setMedicineDispensesLoading(true);
+      const response = await fetch(`/api/medical/dispense?elderly_id=${elderlyId}&pay_status=UNPAID&page=1&pageSize=50`);
+      if (!response.ok) {
+        throw new Error(`获取药品配发记录失败: ${response.status}`);
+      }
+      const result: DispenseRecordResponse = await response.json();
+      if (result.ok && result.data) {
+        // 过滤出未支付的记录
+        const unpaidDispenses = result.data.filter(
+          dispense => dispense.payment_Status === 'UNPAID'
+        );
+        setMedicineDispenses(unpaidDispenses);
+      }
+    } catch (error) {
+      console.error('获取药品配发记录失败:', error);
+      alert('获取药品配发记录失败，请稍后重试');
+    } finally {
+      setMedicineDispensesLoading(false);
     }
   };
 
@@ -114,6 +144,41 @@ const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId
       
       // 重新获取房间账单数据
       await fetchRoomBillings();
+    } catch (err: any) {
+      alert(err?.message || '支付失败');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // 处理药品支付
+  const handleConfirmMedicinePayment = async () => {
+    if (!confirmMedicineDispense) return;
+    try {
+      setPaying(true);
+      const paymentData: UpdatePayStatusDto = {
+        payment_Status: 'PAID',
+        payment_Method: '线上支付'
+      };
+
+      const response = await fetch(`/api/medical/dispense/${confirmMedicineDispense.dispense_Id}/pay`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData)
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`支付失败: ${response.status} ${response.statusText} ${text}`);
+      }
+
+      setConfirmMedicineDispense(null);
+      setPaymentRemarks('');
+      setMedicinePaySuccess(`药品配发 ${confirmMedicineDispense.dispense_Id} 支付成功`);
+      setTimeout(() => setMedicinePaySuccess(null), 3000);
+      
+      // 重新获取药品配发记录数据
+      await fetchMedicineDispenses();
     } catch (err: any) {
       alert(err?.message || '支付失败');
     } finally {
@@ -219,10 +284,67 @@ const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId
         )}
       </SectionWrapper>
 
-      {/* 药品费用板块（使用传入 records 的一部分或全部，可根据 item 包含 '药' 过滤，这里简单展示全部示例） */}
-      {/* <SectionWrapper title="药品费用" icon="💊">
-        {renderRecordsTable(records.filter(r => /药|药品|medicine/i.test(r.item)))}
-      </SectionWrapper> */}
+      {/* 药品费用板块 */}
+      <SectionWrapper title="药品费用" icon="💊">
+        {medicinePaySuccess && (
+          <div className="mb-3 text-sm rounded-lg border border-green-200 bg-green-50 text-green-700 px-3 py-2 shadow-sm">
+            ✅ {medicinePaySuccess}
+          </div>
+        )}
+        {medicineDispensesLoading ? (
+          <div className="text-gray-400 text-sm">加载中...</div>
+        ) : medicineDispenses.length === 0 ? (
+          <div className="text-gray-400 text-sm">暂无未支付药品记录</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="mb-2 text-sm font-medium text-red-700">
+              待支付总金额：<span className="text-xl">¥{medicineDispenses.reduce((sum, d) => sum + d.total_Amount, 0).toFixed(2)}</span>
+            </div>
+            <table className="min-w-full text-xs md:text-sm">
+              <thead>
+                <tr className="bg-blue-50 text-blue-800">
+                  <th className="px-6 py-3 text-left">配发ID</th>
+                  <th className="px-6 py-3 text-left">账单号</th>
+                  <th className="px-6 py-3 text-left">药品ID</th>
+                  <th className="px-6 py-3 text-left">数量</th>
+                  <th className="px-6 py-3 text-left">单价</th>
+                  <th className="px-6 py-3 text-left">总金额</th>
+                  <th className="px-6 py-3 text-left">状态</th>
+                  <th className="px-6 py-3 text-left">备注</th>
+                  <th className="px-6 py-3 text-left">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {medicineDispenses.map(dispense => (
+                  <tr key={dispense.dispense_Id} className="border-b last:border-b-0 hover:bg-blue-50">
+                    <td className="px-6 py-3">{dispense.dispense_Id}</td>
+                    <td className="px-6 py-3">{dispense.bill_Id}</td>
+                    <td className="px-6 py-3">{dispense.medicine_Id}</td>
+                    <td className="px-6 py-3">{dispense.quantity}</td>
+                    <td className="px-6 py-3">¥{dispense.unit_Sale_Price.toFixed(2)}</td>
+                    <td className="px-6 py-3 font-semibold text-red-600">¥{dispense.total_Amount.toFixed(2)}</td>
+                    <td className="px-6 py-3">
+                      <span className="px-2 py-1 rounded text-xs bg-yellow-50 text-yellow-700 border border-yellow-200">
+                        待支付
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-gray-500">{dispense.remarks || '-'}</td>
+                    <td className="px-6 py-3">
+                      <button
+                        onClick={() => setConfirmMedicineDispense(dispense)}
+                        className="px-4 py-2 text-sm rounded bg-green-600 text-white hover:bg-green-700 shadow border border-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={paying}
+                      >
+                        去支付
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SectionWrapper>
 
       {/* 房间费用板块（显示真实的房间账单数据） */}
       <SectionWrapper title="房间费用" icon="🛏️">
@@ -381,6 +503,74 @@ const BillingSettlement: React.FC<BillingSettlementProps> = ({loading, elderlyId
                 </button>
                 <button 
                   onClick={handleConfirmRoomPayment} 
+                  disabled={paying} 
+                  className="flex-1 px-5 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow text-sm"
+                >
+                  {paying ? '处理中...' : '确认支付'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* 药品支付确认弹窗 */}
+      {confirmMedicineDispense && createPortal(
+        <div className="modal-overlay" onClick={() => setConfirmMedicineDispense(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="mb-3">
+              <h4 className="text-xl font-semibold text-blue-800 flex items-center">
+                <span className="text-2xl mr-2">💊</span>确认支付药品费用
+              </h4>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">配发ID:</span>
+                  <span className="font-medium">{confirmMedicineDispense.dispense_Id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">账单号:</span>
+                  <span className="font-medium">{confirmMedicineDispense.bill_Id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">药品ID:</span>
+                  <span className="font-medium">{confirmMedicineDispense.medicine_Id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">数量:</span>
+                  <span className="font-medium">{confirmMedicineDispense.quantity}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">单价:</span>
+                  <span className="font-medium">¥{confirmMedicineDispense.unit_Sale_Price.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-red-600 font-semibold">总金额:</span>
+                  <span className="font-bold text-red-600 text-lg">¥{confirmMedicineDispense.total_Amount.toFixed(2)}</span>
+                </div>
+                {confirmMedicineDispense.remarks && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">备注:</span>
+                    <span className="font-medium">{confirmMedicineDispense.remarks}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-2">
+                <button 
+                  onClick={() => {
+                    setConfirmMedicineDispense(null);
+                    setPaymentRemarks('');
+                  }} 
+                  disabled={paying} 
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 text-sm disabled:opacity-50"
+                >
+                  取消
+                </button>
+                <button 
+                  onClick={handleConfirmMedicinePayment} 
                   disabled={paying} 
                   className="flex-1 px-5 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow text-sm"
                 >

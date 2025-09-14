@@ -201,3 +201,36 @@ export interface PaymentRequest {
   paymentMethod: string;
   remarks: string;
 }
+
+// 药品配发记录接口
+export interface DispenseRecord {
+  dispense_Id: number;
+  bill_Id: string;
+  elderly_Id: number;
+  order_Id: number;
+  staff_Id: number;
+  medicine_Id: number;
+  stock_Batch_Id: number;
+  quantity: number;
+  unit_Sale_Price: number;
+  total_Amount: number;
+  payment_Status: 'PAID' | 'UNPAID';
+  payment_Method: string;
+  settlement_Id: number | null;
+  dispense_Time: string | null;
+  status: string;
+  remarks: string;
+}
+
+// 药品配发记录API响应接口
+export interface DispenseRecordResponse {
+  ok: boolean;
+  data: DispenseRecord[];
+  message: string | null;
+}
+
+// 药品支付状态更新DTO
+export interface UpdatePayStatusDto {
+  payment_Status: 'PAID';
+  payment_Method?: string;
+}
