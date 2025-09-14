@@ -72,6 +72,11 @@ export default defineConfig({
         target: 'http://47.96.238.102:6006',
         changeOrigin: true,
       },
+      // ↓↓↓↓ 新增的、精准匹配 /api/medical/dispense 的规则，转发到 6006 端口 ↓↓↓↓
+      '/api/medical/dispense': {
+        target: 'http://47.96.238.102:6006',
+        changeOrigin: true,
+      },
       // ↓↓↓↓ 新增的规则 ↓↓↓↓
       '/api/VisitorRegistration': {
         target: 'http://47.96.238.102:9000', // 假设端口是 9000，请根据实际情况修改
@@ -88,7 +93,20 @@ export default defineConfig({
         changeOrigin: true,
         // 重写规则：将 /api-occupancy 替换为 /api/RoomOccupancy
         rewrite: (path) => path.replace(/^\/api-occupancy/, '/api/RoomOccupancy'),
-      }
+      },
+      // ↓↓↓↓ 新增或确认这条医疗服务的代理规则 ↓↓↓↓
+      '/api-medical': {
+        target: 'http://47.96.238.102:6006', // 目标服务器：端口 6006
+        changeOrigin: true,
+        // 重写规则：将 /api-medical 替换为后端需要的 /api/medical
+        rewrite: (path) => path.replace(/^\/api-medical/, '/api/medical'),
+      },
+      // ↓↓↓↓ 新增这条规则，处理所有健康监测数据提交请求 ↓↓↓↓
+      '/api/HealthMonitoring': {
+        target: 'http://47.96.238.102:3003', // 请将 "4-I-should-be-replaced" 替换为实际的目标IP地址或域名
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/HealthMonitoring/, '/api/HealthMonitoring'),
+      },
       
     }
   }

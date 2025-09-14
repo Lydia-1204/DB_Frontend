@@ -4,7 +4,7 @@ import type { StaffInfo } from '@smart-elderly-care/types';
 import styles from './LoginPage.module.css';
 
 export function LoginPage() {
-  // 统一“返回门户”跳转逻辑
+  // --- 无需修改的部分 ---
   const isLocalHostEnv = ['localhost','127.0.0.1'].includes(window.location.hostname);
   const portalCandidates: string[] = [
     'http://localhost:4300/',
@@ -15,15 +15,18 @@ export function LoginPage() {
     const timer = setTimeout(()=>{ if(!done){ done=true; try{img.src='';}catch{} resolve(false);} }, timeout);
     img.onload = () => { if(!done){ done=true; clearTimeout(timer); resolve(true);} };
     img.onerror = () => { if(!done){ done=true; clearTimeout(timer); resolve(false);} };
-    try { img.src = url.replace(/\/$/, '') + '/favicon.ico?_=' + Date.now(); } catch { clearTimeout(timer); resolve(false);} 
+    try { img.src = url.replace(/\/$/, '') + '/favicon.ico?_=' + Date.now(); } catch { clearTimeout(timer); resolve(false);}
   });
   const goPortal = async () => {
     if (!isLocalHostEnv) { window.location.href = portalCandidates[1] || portalCandidates[0]; return; }
     for (const c of portalCandidates) { try { if (await pingUrl(c)) { window.location.href = c; return; } } catch {} }
     window.location.href = portalCandidates[portalCandidates.length - 1];
   };
+
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
+  // --- 新增 state: 用于控制密码的可见性 ---
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,31 +37,25 @@ export function LoginPage() {
     setIsLoginLoading(true);
 
     try {
-      // --- 步骤 1: 提交凭证进行认证 ---
       const authResponse = await fetch('/api-staff/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // API 需要 stafF_ID，但我们从 state 获取的是 staffId，需要转换
-          stafF_ID: parseInt(staffId, 10), 
+          stafF_ID: parseInt(staffId, 10),
           password: password,
         }),
       });
 
-      // --- 核心修改：精确处理 401 错误 ---
       if (authResponse.status === 401) {
-        // 后端返回401，明确表示认证失败
-        throw new Error('401'); 
+        throw new Error('401');
       }
 
       if (!authResponse.ok) {
-        // 处理其他服务器或网络错误 (例如 500 Internal Server Error)
         throw new Error('认证服务器暂时无法连接，请稍后重试。');
       }
 
-      // --- 步骤 2: 认证成功后，获取所有员工的详细信息 ---
       const staffInfoResponse = await fetch('/api-staff/staff-info/staff');
       if (!staffInfoResponse.ok) {
         throw new Error('无法获取员工详细信息，请联系管理员。');
@@ -69,19 +66,16 @@ export function LoginPage() {
 
       if (isNaN(staffIdAsNumber)) {
         setLoginError('员工ID必须是数字');
-        // 虽然前面的API调用可能已经失败，但这里做一个前端的最终校验
         setIsLoginLoading(false);
         return;
       }
 
-      // --- 步骤 3: 在详细信息列表中找到当前登录的用户 ---
       const foundStaff = allStaff.find(staff => staff.staffId === staffIdAsNumber);
 
       if (foundStaff) {
         console.log('登录成功，获取到详细信息:', foundStaff);
         localStorage.setItem('loggedInUser', JSON.stringify(foundStaff));
 
-        // --- 步骤 4: 根据职位进行跳转 ---
         const position = foundStaff.position;
         if (position === 'Supervisor') {
           navigate('/supervisor');
@@ -91,18 +85,15 @@ export function LoginPage() {
           navigate('/nurse');
         } else if (position === 'Cleaner') {
           navigate('/cleaner');
-        } else if (position === '维修人员') {
+        } else if (position === 'Repairman') {
           navigate('/maintenance');
         } else {
-          // 其他所有职位都跳转到这个默认的员工界面
           navigate('/staff');
         }
       } else {
-        // 这种情况理论上不应该发生（认证成功但找不到信息），但作为保险措施
         throw new Error('认证成功，但无法在数据库中找到您的记录。');
       }
     } catch (err: any) {
-      // --- 统一的错误处理中心 ---
       if (err.message === '401') {
         setLoginError('员工ID或密码错误');
       } else {
@@ -142,16 +133,26 @@ export function LoginPage() {
                 required
               />
             </div>
+            {/* --- 这是修改的核心部分 --- */}
             <div className={styles.inputGroup}>
               <label htmlFor="password">密码</label>
               <input
                 id="password"
-                type="password"
+                // 根据 showPassword 状态动态改变 input 类型
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="请输入密码"
                 required
               />
+              {/* 点击这个 span 会切换 showPassword 的状态 */}
+              <span
+                className={styles.passwordToggle}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {/* 根据状态显示不同的 Emoji 作为图标 */}
+                {showPassword ? '👁️' : '🔒'}
+              </span>
             </div>
             {loginError && <p className={styles.error}>{loginError}</p>}
             <button type="submit" className={styles.button} disabled={isLoginLoading}>

@@ -1,12 +1,18 @@
 import React, { useState, FormEvent, ChangeEvent } from 'react';
-// 确保你的 types 包路径是正确的
-import type { ElderlyProfile, NewMedicalOrderPayload, StaffInfo } from '@smart-elderly-care/types'; 
-// 假设这个组件存在，用于展示数据
-import { ElderlyHealthDataViewer } from '../../components/Dashboard/ElderlyHealthDataViewer'; 
+import type { ElderlyProfile, NewMedicalOrderPayload, DispenseMedicinePayload, StaffInfo } from '@smart-elderly-care/types';
+import { ElderlyHealthDataViewer } from '../../components/Dashboard/ElderlyHealthDataViewer';
 import styles from '../Nurse/ElderlyManagementPage.module.css';
 
-// 为开具医嘱的表单状态定义类型
+// --- 表单状态类型定义 ---
 type NewOrderForm = { medicineId: string; dosage: string; frequency: string; duration: string; };
+type DispenseForm = { medicineId: string; quantity: string; paymentMethod: string; remarks: string; };
+// 新增：健康数据表单类型
+type HealthDataForm = {
+  heartRate: string;
+  bloodPressure: string;
+  oxygenLevel: string;
+  temperature: string;
+};
 
 export const DoctorDashboard: React.FC = () => {
   // --- State Management ---
@@ -16,8 +22,10 @@ export const DoctorDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
-  // 只保留开具医嘱的表单 state
   const [newOrder, setNewOrder] = useState<NewOrderForm>({ medicineId: '', dosage: '', frequency: '', duration: '' });
+  const [newDispense, setNewDispense] = useState<DispenseForm>({ medicineId: '', quantity: '', paymentMethod: '线上支付', remarks: '' });
+  // 新增：健康数据表单状态
+  const [healthData, setHealthData] = useState<HealthDataForm>({ heartRate: '', bloodPressure: '', oxygenLevel: '', temperature: '' });
 
   // --- Functions ---
   const fetchProfile = async (id: string) => {
@@ -43,25 +51,28 @@ export const DoctorDashboard: React.FC = () => {
     fetchProfile(searchId);
   };
   
-  // 表单内容变化的通用处理函数
   const handleOrderFormChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewOrder(prev => ({ ...prev, [name]: value }));
   };
-  
-  // --- ↓↓↓↓↓↓ 核心修正点在这里 ↓↓↓↓↓↓ ---
+
   const handleSubmitOrder = async (e: FormEvent) => {
     e.preventDefault();
-    if (!currentProfile) return setError("请先加载一位老人的档案");
+    if (!currentProfile) {
+      setError("请先加载一位老人的档案");
+      return;
+    }
     
     const userString = localStorage.getItem('loggedInUser');
-    if (!userString) return setError("无法获取医生信息，请重新登录");
+    if (!userString) {
+      setError("无法获取医生信息，请重新登录");
+      return;
+    }
     const doctor: StaffInfo = JSON.parse(userString);
     
-    // 严格按照最新的 API 格式构建 payload 对象
     const payload: NewMedicalOrderPayload = {
       elderly_id: currentProfile.elderlyInfo.elderlyId,
-      staff_id: doctor.staffId, // 确保从 StaffInfo 中获取正确的字段名
+      staff_id: doctor.staffId,
       medicine_id: Number(newOrder.medicineId),
       order_date: new Date().toISOString(),
       dosage: newOrder.dosage,
@@ -74,13 +85,9 @@ export const DoctorDashboard: React.FC = () => {
       orderDate: ''
     };
 
-    console.log("即将发送的医嘱 Payload:", JSON.stringify(payload, null, 2));
-
     setNotification("正在提交医嘱...");
-    setError(null); // 清除旧的错误信息
+    setError(null);
     try {
-      // 假设医嘱相关的 API 代理前缀是 /api-medical
-      // 如果不是，请修改为正确的路径，例如 /api/medical/orders
       const response = await fetch('/api/medical/orders', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,16 +98,112 @@ export const DoctorDashboard: React.FC = () => {
           throw new Error(`开具医嘱失败 (状态码: ${response.status}): ${errorBody || '未知错误'}`);
       }
       setNotification("医嘱开具成功！");
-      setNewOrder({ medicineId: '', dosage: '', frequency: '', duration: '' }); // 清空表单
-      // 重新加载档案数据，以显示刚刚添加的新医嘱
+      setNewOrder({ medicineId: '', dosage: '', frequency: '', duration: '' });
       fetchProfile(String(currentProfile.elderlyInfo.elderlyId));
     } catch (err: any) {
       setError(err.message);
       setNotification(null);
     }
   };
-  // --- ↑↑↑↑↑↑ 核心修正点在这里 ↑↑↑↑↑↑ ---
+  
+  const handleDispenseFormChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewDispense(prev => ({ ...prev, [name]: value }));
+  };
 
+  const handleSubmitDispense = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!currentProfile) {
+      setError("请先加载一位老人的档案");
+      return;
+    }
+    const userString = localStorage.getItem('loggedInUser');
+    if (!userString) {
+      setError("无法获取医生信息，请重新登录");
+      return;
+    }
+    const doctor: StaffInfo = JSON.parse(userString);
+    
+    const payload: DispenseMedicinePayload = {
+      elderly_Id: currentProfile.elderlyInfo.elderlyId,
+      medicine_Id: Number(newDispense.medicineId),
+      quantity: Number(newDispense.quantity),
+      staff_Id: doctor.staffId,
+      payment_Method: newDispense.paymentMethod,
+      remarks: newDispense.remarks,
+      bill_Id: "1",
+      order_Id: 1,
+      settlement_Id: 1,
+    };
+
+    setNotification("正在提交开药信息...");
+    setError(null);
+    try {
+      const response = await fetch('/api/medical/dispense', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`开药失败: ${errorBody || `状态码 ${response.status}`}`);
+      }
+      setNotification("药品开具成功！");
+      setNewDispense({ medicineId: '', quantity: '', paymentMethod: '线上支付', remarks: '' });
+      fetchProfile(String(currentProfile.elderlyInfo.elderlyId)); 
+    } catch (err: any) {
+      setError(err.message);
+      setNotification(null);
+    }
+  };
+
+  // --- 新增：健康数据表单处理函数 ---
+  const handleHealthDataFormChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setHealthData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitHealthData = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!currentProfile) {
+      setError("请先加载一位老人的档案");
+      return;
+    }
+
+    const payload = {
+      elderlyId: currentProfile.elderlyInfo.elderlyId,
+      heartRate: Number(healthData.heartRate),
+      bloodPressure: healthData.bloodPressure,
+      oxygenLevel: Number(healthData.oxygenLevel),
+      temperature: Number(healthData.temperature),
+      measurementTime: new Date().toISOString()
+    };
+
+    setNotification("正在提交健康数据...");
+    setError(null);
+    try {
+      // 使用新的 API 路径，该路径会被代理到 3003 端口
+      const response = await fetch('/api/HealthMonitoring/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`提交失败: ${errorBody || `状态码 ${response.status}`}`);
+      }
+
+      setNotification("健康数据提交成功！");
+      setHealthData({ heartRate: '', bloodPressure: '', oxygenLevel: '', temperature: '' }); // 成功后清空表单
+      // 重新加载老人档案以显示最新数据
+      fetchProfile(String(currentProfile.elderlyInfo.elderlyId));
+    } catch (err: any) {
+      setError(err.message);
+      setNotification(null);
+    }
+  };
+  
   return (
     <div className={styles.container}>
       <div className={styles.header}><h1>医生工作台</h1></div>
@@ -131,6 +234,7 @@ export const DoctorDashboard: React.FC = () => {
             <section style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
               <h3 style={{marginTop: 0}}>开具新医嘱</h3>
               <form onSubmit={handleSubmitOrder}>
+                {/* ... 医嘱表单字段 ... */}
                 <div className={styles.formGroup}><label>药品ID</label><input name="medicineId" type="number" value={newOrder.medicineId} onChange={handleOrderFormChange} required /></div>
                 <div className={styles.formGroup}><label>剂量</label><input name="dosage" type="text" value={newOrder.dosage} onChange={handleOrderFormChange} required /></div>
                 <div className={styles.formGroup}><label>频次</label><input name="frequency" type="text" value={newOrder.frequency} onChange={handleOrderFormChange} required /></div>
@@ -139,7 +243,41 @@ export const DoctorDashboard: React.FC = () => {
               </form>
             </section>
             
-            {/* 健康报告功能已移除 */}
+            <section style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginTop: '24px' }}>
+              <h3 style={{marginTop: 0}}>发药</h3>
+              <form onSubmit={handleSubmitDispense}>
+                {/* ... 发药表单字段 ... */}
+                <div className={styles.formGroup}><label>药品ID</label><input name="medicineId" type="number" value={newDispense.medicineId} onChange={handleDispenseFormChange} required /></div>
+                <div className={styles.formGroup}><label>数量</label><input name="quantity" type="number" value={newDispense.quantity} onChange={handleDispenseFormChange} required /></div>
+                <div className={styles.formGroup}><label>支付方式</label><select name="paymentMethod" value={newDispense.paymentMethod} onChange={handleDispenseFormChange} style={{ width: '100%', padding: '8px', border: '1px solid #d9d9d9', borderRadius: '4px' }}><option value="线上支付">线上支付</option><option value="现金">现金</option></select></div>
+                <div className={styles.formGroup}><label>备注</label><input name="remarks" type="text" value={newDispense.remarks} onChange={handleDispenseFormChange} /></div>
+                <button type="submit" className={styles.button}>确认开药</button>
+              </form>
+            </section>
+
+            {/* --- ↓↓↓↓ 新增的健康数据上传表单 ↓↓↓↓ --- */}
+            <section style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginTop: '24px' }}>
+              <h3 style={{marginTop: 0}}>上传健康数据</h3>
+              <form onSubmit={handleSubmitHealthData}>
+                <div className={styles.formGroup}>
+                  <label>心率 (次/分)</label>
+                  <input name="heartRate" type="number" value={healthData.heartRate} onChange={handleHealthDataFormChange} required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>血压 (mmHg)</label>
+                  <input name="bloodPressure" type="text" placeholder="例如: 120/80" value={healthData.bloodPressure} onChange={handleHealthDataFormChange} required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>血氧饱和度 (%)</label>
+                  <input name="oxygenLevel" type="number" value={healthData.oxygenLevel} onChange={handleHealthDataFormChange} required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>体温 (°C)</label>
+                  <input name="temperature" type="number" step="0.1" value={healthData.temperature} onChange={handleHealthDataFormChange} required />
+                </div>
+                <button type="submit" className={styles.button}>提交数据</button>
+              </form>
+            </section>
             
           </div>
         </div>

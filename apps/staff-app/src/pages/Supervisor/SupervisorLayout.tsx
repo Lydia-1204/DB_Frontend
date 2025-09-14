@@ -38,8 +38,11 @@ export function SupervisorLayout() {
           <NavLink to="/supervisor/rooms">房间管理</NavLink>
           {/* ↓↓↓↓ 在这里添加新的费用结算导航链接 ↓↓↓↓ */}
           <NavLink to="/supervisor/OccupancyManagementPage">房间入住/退房登记</NavLink>
-          <NavLink to="/supervisor/announcements">公告栏</NavLink>
+         
           <NavLink to="/supervisor/billing-records">费用结算</NavLink>
+          {/* ↓↓↓↓ 在这里添加新的药品库存导航链接 ↓↓↓↓ */}
+          <NavLink to="/supervisor/medicine-inventory">药品库存</NavLink>
+          <NavLink to="/supervisor/announcements">公告栏</NavLink>
 
         </nav>
         <div className="sidebar-footer">

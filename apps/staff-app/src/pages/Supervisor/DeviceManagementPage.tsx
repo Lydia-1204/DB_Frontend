@@ -160,9 +160,7 @@ export function DeviceManagementPage() {
         <div className={styles.statsContainer}>
           <div className={styles.statsGrid}>
             <StatCard title="总设备数" value={stats.总设备数} />
-            <StatCard title="正常设备" value={stats.正常设备} />
-            <StatCard title="故障设备" value={stats.故障设备} />
-            <StatCard title="维护中设备" value={stats.维护中设备} />
+            
           </div>
           <button onClick={() => setIsStatsExpanded(!isStatsExpanded)} className={styles.toggleStatsButton}>
             {isStatsExpanded ? '收起详细信息 ▲' : '显示详细信息 ▼'}
@@ -193,19 +191,7 @@ export function DeviceManagementPage() {
                     ))}
                   </div>
                 </div>
-                <div className={styles.distroGroup}>
-                  <h4>分配情况</h4>
-                  <div className={styles.distroList}>
-                    <div className={styles.distroRow}>
-                      <span className={styles.distroKey}>已分配房间设备</span>
-                      <span className={styles.distroValue}>{stats.已分配房间设备}</span>
-                    </div>
-                     <div className={styles.distroRow}>
-                      <span className={styles.distroKey}>未分配房间设备</span>
-                      <span className={styles.distroValue}>{stats.未分配房间设备}</span>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
             </div>
           )}

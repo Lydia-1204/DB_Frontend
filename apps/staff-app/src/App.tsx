@@ -14,6 +14,7 @@ import { DeviceManagementPage } from './pages/Supervisor/DeviceManagementPage';
 import { RoomManagementPage } from './pages/Supervisor/RoomManagementPage';
 import { OccupancyManagementPage } from './pages/Supervisor/OccupancyManagementPage.tsx';
 import { BillingRecordsPage } from './pages/Supervisor/BillingRecordsPage.tsx'; // 费用结算页面
+import { MedicineInventoryPage } from './pages/Supervisor/MedicineInventoryPage';
 
 // 护士端组件
 import { NurseLayout } from './pages/Nurse/NurseLayout.tsx'; // 假设 NurseLayout 在这个路径
@@ -102,6 +103,8 @@ function App() {
         {/* ↓↓↓↓ 集成公告页，并传入角色 'supervisor' ↓↓↓↓ */}
         <Route path="announcements" element={<AnnouncementsPage role="supervisor" />} />
         <Route path="billing-records" element={<BillingRecordsPage />} />
+        {/* ↓↓↓↓ 在这里添加新的药品库存路由 ↓↓↓↓ */}
+        <Route path="medicine-inventory" element={<MedicineInventoryPage />} />
       </Route>
       
       {/* --- 医生端路由 --- */}

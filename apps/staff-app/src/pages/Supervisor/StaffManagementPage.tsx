@@ -161,7 +161,7 @@ export function StaffManagementPage() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingStaff) return;
 
@@ -179,6 +179,7 @@ export function StaffManagementPage() {
     };
 
     try {
+      // 第一步：提交新增或更新员工的请求
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -189,6 +190,37 @@ export function StaffManagementPage() {
         const errorData = await response.text();
         throw new Error((isEditing ? '更新失败: ' : '新增失败: ') + (errorData || response.statusText));
       }
+
+      // --- 新增逻辑开始 ---
+      // 只有在“新增”模式下并且员工创建成功后，才设置默认密码
+      if (!isEditing) {
+        // 假设创建员工的API会返回新员工的信息，包括ID
+        const newStaff = await response.json(); 
+        const newStaffId = newStaff.staffId;
+
+        if (newStaffId) {
+          try {
+            // 第二步：调用设置密码的API
+            const passwordResponse = await fetch('/api-staff/Auth/add-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                "staff_ID": newStaffId,
+                "password": "000000" // 设置默认密码
+              }),
+            });
+
+            if (!passwordResponse.ok) {
+              // 如果设置密码失败，抛出错误，但提示用户员工已创建
+              throw new Error(`员工 ${newStaff.name} (ID: ${newStaffId}) 已成功创建，但设置默认密码失败。请手动设置。`);
+            }
+          } catch (passwordError: any) {
+            // 捕获密码设置的异常并提示用户
+            alert(passwordError.message);
+          }
+        }
+      }
+      // --- 新增逻辑结束 ---
 
       await fetchStaffList(); 
       handleCloseModal();
@@ -227,7 +259,7 @@ export function StaffManagementPage() {
           >
             <option value="all">所有职位</option>
             <option value="Cleaner">Cleaner</option>
-            <option value="维修工">维修工</option>
+            <option value="Repairman">Repairman</option>
             <option value="Nurse">Nurse</option>
             <option value="Doctor">Doctor</option>
           </select>
@@ -311,7 +343,8 @@ export function StaffManagementPage() {
                     <option value="" disabled>请选择职位</option>
                     <option value="Nurse">Nurse</option>
                     <option value="Doctor">Doctor</option>
-                    <option value="维修工">维修工</option>
+                    <option value="Repairman">Repairman</option>
+                    <option value="Cleaner">Cleaner</option>
                   </select>
                 </div>
                 <div className={styles.formGroup}>

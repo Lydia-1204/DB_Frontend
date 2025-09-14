@@ -71,10 +71,13 @@
   flex-direction: column;
 }
 
+/* --- 修改这里 --- */
 .inputGroup {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  width: 100%;
+  /* 添加相对定位，为“小眼睛”的绝对定位做准备 */
+  position: relative;
 }
-
 .inputGroup label {
   display: block;
   margin-bottom: 8px;
@@ -90,6 +93,7 @@
   font-size: 1rem;
   transition: border-color 0.3s;
   box-sizing: border-box;
+  padding-right: 40px;
 }
 
 .inputGroup input:focus {
@@ -153,3 +157,13 @@
   text-decoration: none;
 }
 .returnPortalBtn:active { transform: translateY(1px); }
+/* --- 新增样式：用于“小眼睛”图标 --- */
+.passwordToggle {
+  position: absolute; /* 绝对定位于 .inputGroup 内 */
+  right: 12px;      /* 距离右边框 12px */
+  top: 40px;        /* 这个值可能需要微调，确保和输入框垂直居中 */
+  transform: translateY(-50%); /* 垂直居中 */
+  cursor: pointer;  /* 鼠标悬浮时显示手型光标 */
+  user-select: none; /* 防止用户选中图标文字 */
+  font-size: 18px;   /* 调整图标大小 */
+}

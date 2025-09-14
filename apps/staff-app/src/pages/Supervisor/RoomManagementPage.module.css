@@ -225,3 +225,31 @@ h1 { font-size: 24px; margin-bottom: 24px; }
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+.statusBadge {
+  display: inline-block;    /* 确保 padding 和 width 生效 */
+  padding: 5px 12px;        /* 调整内边距，让徽章更饱满 */
+  border-radius: 12px;      /* 圆角 */
+  font-size: 13px;          /* 调整字体大小 */
+  font-weight: 500;         /* 字体稍微加粗 */
+  color: #fff;              /* 文字颜色为白色 */
+  text-align: center;       /* 文字居中 */
+  min-width: 60px;          /* 保证一个最小宽度，避免长短不一 */
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* 添加细微的立体感阴影 */
+  text-transform: capitalize; /* 如果是英文，首字母大写 */
+}
+
+/* 定义不同状态的颜色 */
+.available { /* '空闲' 的样式 */
+  background-color: #52c41a; /* 绿色 */
+}
+
+.occupied { /* '入住' 的样式 */
+  background-color: #f5222d; /* 一个更鲜明的红色 */
+}
+
+.maintenance { /* '维修' 的样式 */
+  background-color: #faad14; /* 黄色 */
+}

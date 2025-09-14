@@ -221,7 +221,7 @@ function InProgressTask({ event, onCompleteClick }: { event: EmergencySosEvent, 
       <h1 className={styles.header}>我的当前任务</h1>
       <div className={styles.sosCard} style={{border: 'none', background: 'transparent'}}>
         <p><strong>老人ID:</strong> {event.elderlY_ID}</p>
-        <p><strong>房间ID:</strong> {event.rooM_ID}</p>
+        
         <p><strong>呼叫时间:</strong> {new Date(event.calL_TIME).toLocaleString()}</p>
         <p><strong>状态:</strong> 正在处理...</p>
         <div className={styles.cardActions}>
@@ -246,7 +246,7 @@ function PendingAlerts({ events, onAcceptClick }: { events: EmergencySosEvent[],
           events.map(event => (
             <div key={event.calL_ID} className={styles.sosCard}>
               <p><strong>老人ID:</strong> {event.elderlY_ID}</p>
-              <p><strong>房间ID:</strong> {event.rooM_ID}</p>
+              
               <p><strong>呼叫时间:</strong> {new Date(event.calL_TIME).toLocaleString()}</p>
               <div className={styles.cardActions}>
                 <button className={`${styles.button} ${styles.acceptBtn}`} onClick={() => onAcceptClick(event.calL_ID)}>

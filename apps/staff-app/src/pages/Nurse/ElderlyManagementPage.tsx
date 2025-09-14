@@ -39,7 +39,8 @@ export function ElderlyManagementPage({ role }: ElderlyManagementPageProps) {
       setDisplayedElderly(allElderly);
     } else {
       const filtered = allElderly.filter(e =>
-        e.name.toLowerCase().includes(searchTerm.toLowerCase()) || String(e.elderlyId).includes(searchTerm)
+        e.elderlyId != 0 &&
+        (e.name.toLowerCase().includes(searchTerm.toLowerCase()) || String(e.elderlyId).includes(searchTerm))
       );
       setDisplayedElderly(filtered);
     }
@@ -51,8 +52,11 @@ export function ElderlyManagementPage({ role }: ElderlyManagementPageProps) {
       const response = await fetch('/api/ElderlyInfo');
       if (!response.ok) throw new Error('获取老人列表失败');
       const data: ElderlyInfo[] = await response.json();
-      setAllElderly(data);
-      setDisplayedElderly(data);
+         // --- 新增代码：在这里进行过滤 ---
+      const filteredData = data.filter(elderly => elderly.elderlyId > 0);
+      // 使用过滤后的数据更新状态
+      setAllElderly(filteredData);
+      setDisplayedElderly(filteredData);
     } catch (err: any) {
       setError(err.message);
     } finally {

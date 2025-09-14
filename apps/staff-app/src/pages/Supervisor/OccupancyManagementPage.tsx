@@ -6,7 +6,7 @@ import type {
 } from '@smart-elderly-care/types';
 import styles from './OccupancyManagementPage.module.css';
 
-// --- API Client ---
+// --- API Client (此部分无需修改) ---
 const apiClient = {
   getOccupancies: (params: { page: number; pageSize: number; status?: string; search?: string }): Promise<OccupancyApiResponse> => {
     const query = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) });
@@ -18,14 +18,37 @@ const apiClient = {
     fetch('/api-occupancy/check-in', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(res => res.json()),
   checkOut: (data: CheckOutDto): Promise<MutationApiResponse> => 
     fetch('/api-occupancy/check-out', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(res => res.json()),
-  generateAllBills: (startDate: string): Promise<MutationApiResponse> => {
-    const requestBody = { elderlyId: 1, billingStartDate: startDate, billingEndDate: new Date().toISOString(), dailyRate: 1.0, remarks: "批量生成所有老人账单" };
-    return fetch('/api-occupancy/billing/generate-all', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }).then(res => res.json());
+  generateAllBills: (selectedDateStr: string): Promise<MutationApiResponse> => {
+    const parts = selectedDateStr.split('-').map(part => parseInt(part, 10));
+    const year = parts[0];
+    const monthIndex = parts[1] - 1; 
+    const firstDayOfMonthUTC = new Date(Date.UTC(year, monthIndex, 1));
+    const firstDayOfMonthISO = firstDayOfMonthUTC.toISOString();
+    const requestBody = {
+      billingStartDate: firstDayOfMonthISO,
+      billingEndDate: firstDayOfMonthISO,
+      
+      remarks: `批量生成 ${year} 年 ${monthIndex + 1} 月账单`
+    };
+    return fetch('/api-occupancy/billing/generate-all', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(requestBody) 
+    }).then(res => res.json());
   },
   generateSingleBill: (elderlyId: number, startDate: string): Promise<MutationApiResponse> => {
     const requestBody = { elderlyId: elderlyId, billingStartDate: startDate, billingEndDate: new Date().toISOString(), dailyRate: 1.0, remarks: `为老人ID ${elderlyId} 生成账单` };
     return fetch(`/api-occupancy/elderly/${elderlyId}/billing/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }).then(res => res.json());
   }
+};
+
+// 辅助函数 (无修改)
+const translateStatus = (status: 'Checked In' | 'Checked Out' | string): string => {
+    switch (status) {
+        case 'Checked In': return '入住中';
+        case 'Checked Out': return '已退房';
+        default: return status;
+    }
 };
 
 // --- 主页面组件 ---
@@ -45,8 +68,18 @@ export function OccupancyManagementPage() {
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Re-added state for the global billing form
-  const [billingStartDate, setBillingStartDate] = useState<string>('');
+  // --- 修改开始 ---
+  // 1. 新增一个辅助函数，用于获取 "YYYY-MM" 格式的当前月份字符串
+  const getCurrentMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // padStart确保月份是两位数
+    return `${year}-${month}`;
+  };
+
+  // 2. 将 state 重命名为 billingMonth 并使用新函数初始化，使其默认显示当前月份
+  const [billingMonth, setBillingMonth] = useState<string>(getCurrentMonth());
+  // --- 修改结束 ---
 
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -55,19 +88,20 @@ export function OccupancyManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await apiClient.getOccupancies({ 
-          page: currentPage, 
-          pageSize: PAGE_SIZE, 
-          status: statusFilter,
-          search: searchTerm
-      });
-      if (res.success && res.data) {
-        setOccupancies(res.data.items);
-        setTotalCount(res.data.totalCount);
-      } else {
-        setOccupancies([]);
-        setTotalCount(0);
-      }
+        const apiStatus = statusFilter === '入住中' ? 'Checked In' : '';
+        const res = await apiClient.getOccupancies({ 
+            page: currentPage, 
+            pageSize: PAGE_SIZE, 
+            status: apiStatus,
+            search: searchTerm
+        });
+        if (res.success && res.data) {
+          setOccupancies(res.data.items);
+          setTotalCount(res.data.totalCount);
+        } else {
+          setOccupancies([]);
+          setTotalCount(0);
+        }
     } catch (err: any) {
       setError("获取入住列表失败！");
     } finally {
@@ -123,37 +157,38 @@ export function OccupancyManagementPage() {
     } catch (error: any) { alert(`操作失败: ${error.message}`); }
   };
 
-  // Re-added the global billing handler
+  // --- 修改开始 ---
+  // 3. 修改“一键生成账单”的提交处理函数
   const handleGenerateAllBills = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!billingStartDate) {
-      alert("请选择一个账单起始日期！"); return;
+    if (!billingMonth) {
+      alert("请选择一个账单月份！"); return; // 更新提示信息
     }
-    if (window.confirm(`确定要从 ${billingStartDate} 开始，为所有在住老人生成本月账单吗？`)) {
+    // 更新确认弹窗的提示
+    if (window.confirm(`确定要为 ${billingMonth} 月份，生成所有在住老人的账单吗？`)) {
         try {
-            const res = await apiClient.generateAllBills(new Date(billingStartDate).toISOString());
+            // 将 "YYYY-MM" 格式的月份字符串拼接成 "YYYY-MM-01"
+            // 以便复用 apiClient 中已有的、处理时区问题的逻辑
+            const firstDayOfMonthStr = `${billingMonth}-01`;
+            const res = await apiClient.generateAllBills(firstDayOfMonthStr);
             if (res.success) {
                 alert(res.message || '所有账单已成功生成！');
             } else { throw new Error(res.message || '生成账单失败'); }
         } catch (error: any) { alert(`操作失败: ${error.message}`); }
     }
   };
+  // --- 修改结束 ---
   
   const handleGenerateBillFromCheckout = async (elderlyId: number) => {
     const startDate = window.prompt("请输入该老人的账单起始日期 (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
     if (!startDate) return;
-
     if (window.confirm(`确定要从 ${startDate} 开始，为老人ID ${elderlyId} 生成本月账单吗？`)) {
         try {
             const res = await apiClient.generateSingleBill(elderlyId, new Date(startDate).toISOString());
             if (res.success) {
                 alert(res.message || `账单已成功生成！`);
-            } else {
-                throw new Error(res.message || '生成账单失败');
-            }
-        } catch (error: any) {
-            alert(`操作失败: ${error.message}`);
-        }
+            } else { throw new Error(res.message || '生成账单失败'); }
+        } catch (error: any) { alert(`操作失败: ${error.message}`); }
     }
   };
   
@@ -172,19 +207,21 @@ export function OccupancyManagementPage() {
     <div className={styles.container}>
       <h1>入住与结算管理</h1>
       
-      {/* RESTORED: The Global Billing Section */}
       <div className={styles.billingSection}>
         <h3>全局账单生成</h3>
-        <p>此操作将根据本月所有老人的入住情况、护理记录和消费，为他们生成本月待支付账单。</p>
+        <p>此操作将根据选定月份所有老人的入住情况，为他们生成该月待支付的房费账单。</p>
         <form onSubmit={handleGenerateAllBills} className={styles.globalBillingForm}>
           <div className={styles.formGroup}>
-            <label>账单起始日期 </label>
+            {/* --- 修改开始 --- */}
+            {/* 4. 将 input 的 type 从 "date" 改为 "month"，并更新 state 绑定 */}
+            <label>选择账单月份 </label>
             <input 
-              type="date" 
-              value={billingStartDate}
-              onChange={(e) => setBillingStartDate(e.target.value)}
+              type="month" 
+              value={billingMonth}
+              onChange={(e) => setBillingMonth(e.target.value)}
               required 
             />
+            {/* --- 修改结束 --- */}
           </div>
           <button type="submit" className={styles.actionButton}>一键生成所有账单</button>
         </form>
@@ -195,6 +232,7 @@ export function OccupancyManagementPage() {
         <button onClick={() => setActiveTab('check-out-billing')} className={`${styles.tabButton} ${activeTab === 'check-out-billing' ? styles.activeTab : ''}`}>退房与记录查询</button>
       </div>
 
+      {/* --- 后续的 JSX 代码无修改 --- */}
       {activeTab === 'check-in' && (
         <div className={styles.formContainer}>
           <h2>办理入住</h2>
@@ -244,10 +282,10 @@ export function OccupancyManagementPage() {
                     <td>{occ.occupancyId}</td>
                     <td>{occ.elderlyName}</td>
                     <td>{occ.roomNumber}</td>
-                    <td><span className={`${styles.statusBadge} ${occ.status === '入住中' ? styles.checkedIn : styles.checkedOut}`}>{occ.status}</span></td>
+                    <td><span className={`${styles.statusBadge} ${occ.status === 'Checked In' ? styles.checkedIn : styles.checkedOut}`}>{translateStatus(occ.status)}</span></td>
                     <td>{new Date(occ.checkInDate).toLocaleDateString()}</td>
                     <td>
-                      {occ.status === '入住中' ? (
+                      {occ.status === 'Checked In' ? (
                         <button onClick={() => setSelectedOccupancy(occ)} className={styles.actionButton}>办理退房</button>
                       ) : (
                         <span className={styles.noAction}> - </span>

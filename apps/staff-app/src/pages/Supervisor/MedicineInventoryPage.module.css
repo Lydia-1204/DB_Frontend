@@ -1,0 +1,100 @@
+.container {
+  padding: 24px;
+  background-color: #f0f2f5;
+}
+
+.error { color: #ff4d4f; }
+h1 { font-size: 24px; margin-bottom: 24px; }
+
+.section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.addButton {
+  padding: 8px 16px;
+  background-color: #1890ff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 采购预警列表 */
+.procurementList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.procurementItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background-color: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 4px;
+}
+
+.procurementItem span {
+  color: #555;
+}
+
+.procurementItem button {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid #52c41a;
+  background-color: #f6ffed;
+  color: #52c41a;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 库存表格 */
+.tableContainer { overflow-x: auto; }
+.inventoryTable { width: 100%; border-collapse: collapse; }
+.inventoryTable th, .inventoryTable td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.inventoryTable th { background-color: #fafafa; font-weight: 600; }
+
+/* 弹窗和表单样式 (可复用之前的) */
+.modalBackdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modalContent { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 700px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.modalContent h2 { margin-top: 0; margin-bottom: 24px; }
+.formGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+.formGroup { margin-bottom: 16px; }
+.formGroup label { display: block; margin-bottom: 8px; font-weight: 500; }
+.formGroup input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; box-sizing: border-box; }
+.modalActions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.modalActions button { padding: 8px 16px; border-radius: 4px; border: 1px solid #d9d9d9; background-color: #fff; cursor: pointer; }
+.modalActions button[type="submit"] { background-color: #1890ff; color: #fff; border-color: #1890ff; }
+/* 表格内通用的操作按钮 */
+.actionButton {
+  padding: 4px 12px;
+  border: 1px solid #1890ff;
+  background-color: transparent;
+  color: #1890ff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  background-color: #e6f7ff;
+}

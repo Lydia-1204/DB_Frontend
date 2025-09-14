@@ -175,7 +175,7 @@ export function MaintenanceDashboard() {
                     <td>{device.location}</td>
                     <td>
                       <div className={styles.actions}>
-                        {device.status === '正常运行' && (
+                        {device.status === '正常' && (
                           <>
                             <button className={`${styles.actionButton} ${styles.reportButton}`} onClick={() => handleOpenModal(device)}>上报故障</button>
                             <button className={`${styles.actionButton} ${styles.maintainButton}`} onClick={() => handleStatusChange(device, '维护中')}>进行维护</button>
@@ -185,7 +185,7 @@ export function MaintenanceDashboard() {
                           <button className={`${styles.actionButton} ${styles.maintainButton}`} onClick={() => handleStatusChange(device, '维护中')}>进行维护</button>
                         )}
                         {device.status === '维护中' && (
-                          <button className={`${styles.actionButton} ${styles.fixButton}`} onClick={() => handleStatusChange(device, '正常运行')}>完成修复</button>
+                          <button className={`${styles.actionButton} ${styles.fixButton}`} onClick={() => handleStatusChange(device, '正常')}>完成修复</button>
                         )}
                       </div>
                     </td>

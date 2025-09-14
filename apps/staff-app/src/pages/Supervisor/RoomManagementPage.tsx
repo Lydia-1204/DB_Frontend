@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+
 // 请确保这里的 import 路径与你的项目结构匹配！
 import type { 
   Room, RoomApiResponse, RoomStatsResponse, RoomDto, RoomStatsData, 
   SingleRoomApiResponse, MutationApiResponse 
 } from '@smart-elderly-care/types';
 import styles from './RoomManagementPage.module.css';
+
 
 // --- API Client ---
 const apiClient = {
@@ -27,6 +29,7 @@ const apiClient = {
     fetch(`/api-room/rooms/${roomId}`, { method: 'DELETE' }),
 };
 
+
 // --- 子组件：单个统计卡片 ---
 function StatCard({ title, value, color }: { title: string; value: number | string; color?: string }) {
   return (
@@ -36,6 +39,7 @@ function StatCard({ title, value, color }: { title: string; value: number | stri
     </div>
   );
 }
+
 
 // --- 全新的、可展开的统计信息组件 ---
 function StatsDisplay({ statsData }: { statsData: RoomStatsData | null }) {
@@ -58,9 +62,7 @@ function StatsDisplay({ statsData }: { statsData: RoomStatsData | null }) {
     <div className={styles.statsContainer}>
       <div className={styles.mainStatsGrid}>
         <StatCard title="总房间数" value={statsData.totalRooms} />
-        <StatCard title="可用房间" value={statsData.availableRooms} color="#52c41a" />
-        <StatCard title="已入住" value={statsData.occupiedRooms} color="#ff4d4f" />
-        <StatCard title="维护中" value={statsData.maintenanceRooms} color="#faad14" />
+        
       </div>
       <div className={styles.toggleButtonContainer}>
         <button onClick={() => setIsExpanded(!isExpanded)} className={styles.toggleButton}>
@@ -82,6 +84,7 @@ function StatsDisplay({ statsData }: { statsData: RoomStatsData | null }) {
     </div>
   );
 }
+
 
 // --- 房间详情弹窗组件 ---
 function RoomDetailsModal({ room, isOpen, onClose }: { room: Room | null, isOpen: boolean, onClose: () => void }) {
@@ -115,6 +118,7 @@ function RoomDetailsModal({ room, isOpen, onClose }: { room: Room | null, isOpen
     </div>
   );
 }
+
 
 // --- 新增/编辑房间的弹窗表单组件 ---
 function RoomFormModal({ room, isOpen, onClose, onSave }: { room: Room | null, isOpen: boolean, onClose: () => void, onSave: () => void }) {
@@ -177,6 +181,7 @@ function RoomFormModal({ room, isOpen, onClose, onSave }: { room: Room | null, i
     </div>
   );
 }
+
 
 // --- 主页面组件 ---
 export function RoomManagementPage() {
@@ -291,6 +296,14 @@ export function RoomManagementPage() {
     }
   };
 
+  // 用于转换状态的辅助函数
+  const formatStatus = (status: string) => {
+    if (status === 'Occupied') return '入住';
+    if (status === 'Available') return '空闲';
+    // 可以为其他状态添加更多转换，或者返回原始值
+    return status;
+  };
+
   return (
     <div className={styles.container}>
       <h1>房间管理</h1>
@@ -309,29 +322,44 @@ export function RoomManagementPage() {
         <table className={styles.roomTable}>
           <thead>
             <tr>
-              <th>房间号</th><th>类型</th><th>楼层</th><th>状态</th>
-              <th>容量</th><th>床位类型</th><th>价格</th><th>设备数</th>
+              <th>房间号</th>
+              <th>类型</th>
+              <th>楼层</th>
+              <th>容量</th>
+              <th>床位类型</th>
+              <th>价格</th>
+              <th>状态</th> {/* <-- 修改点 1: 增加状态表头 */}
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center' }}>正在加载数据...</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center' }}>正在加载数据...</td></tr>
             ) : error ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'red' }}>{error}</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'red' }}>{error}</td></tr>
             ) : rooms.length === 0 ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center' }}>没有找到任何房间。</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center' }}>没有找到任何房间。</td></tr>
             ) : (
               rooms.map((room) => (
                 <tr key={room.roomId}>
                   <td><button onClick={() => handleViewDetails(room.roomId)} className={styles.linkButton}>{room.roomNumber}</button></td>
                   <td>{room.roomType}</td>
                   <td>{room.floor}</td>
-                  <td><span className={`${styles.statusBadge} ${styles[room.status.toLowerCase()]}`}>{room.status}</span></td>
-                  <td>{room.capacity}</td>
+                  <td>{room.capacity}</td> {/* <-- 修正点: 增加了之前遗漏的容量列 */}
                   <td>{room.bedType}</td>
                   <td>¥{room.rate.toFixed(2)}</td>
-                  <td>{room.devices?.length || 0}</td>
+                  <td>
+                    <span
+                      className={`${styles.statusBadge} ${
+                        room.status === 'Available' ? styles.available :
+                        room.status === 'Occupied' ? styles.occupied :
+                        styles.maintenance /* 默认或用于'维修'等其他状态 */
+                      }`}
+                    >
+                      {formatStatus(room.status)}
+                    </span>
+                  </td>
+                  
                   <td>
                     <button onClick={() => handleOpenFormModal(room)} className={`${styles.actionButton} ${styles.editButton}`}>编辑</button>
                     <button onClick={() => handleDelete(room.roomId)} className={`${styles.actionButton} ${styles.deleteButton}`}>删除</button>

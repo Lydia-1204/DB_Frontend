@@ -6,6 +6,11 @@ export function ChangePasswordPage() {
   const [staffId, setStaffId] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  
+  // --- 新增: 为两个密码框分别添加可见性状态 ---
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +40,6 @@ export function ChangePasswordPage() {
         }),
       });
 
-      // 假设即使失败，API也会返回JSON
       const result = await response.json();
 
       if (!response.ok) {
@@ -43,7 +47,6 @@ export function ChangePasswordPage() {
       }
 
       setSuccess('密码修改成功！现在您可以返回登录了。');
-      // 成功后清空表单
       setStaffId('');
       setOldPassword('');
       setNewPassword('');
@@ -71,27 +74,41 @@ export function ChangePasswordPage() {
               required
             />
           </div>
+          {/* --- 修改旧密码输入框 --- */}
           <div className={styles.inputGroup}>
             <label htmlFor="oldPassword">旧密码</label>
             <input
               id="oldPassword"
-              type="password"
+              type={showOldPassword ? 'text' : 'password'}
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               placeholder="请输入您的旧密码"
               required
             />
+            <span
+              className={styles.passwordToggle}
+              onClick={() => setShowOldPassword(!showOldPassword)}
+            >
+              {showOldPassword ? '👁️' : '🔒'}
+            </span>
           </div>
+          {/* --- 修改新密码输入框 --- */}
           <div className={styles.inputGroup}>
             <label htmlFor="newPassword">新密码</label>
             <input
               id="newPassword"
-              type="password"
+              type={showNewPassword ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="请输入您的新密码"
               required
             />
+            <span
+              className={styles.passwordToggle}
+              onClick={() => setShowNewPassword(!showNewPassword)}
+            >
+              {showNewPassword ? '👁️' : '🔒'}
+            </span>
           </div>
           {error && <p className={styles.error}>{error}</p>}
           {success && <p className={styles.success}>{success}</p>}

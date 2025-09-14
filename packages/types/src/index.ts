@@ -749,3 +749,74 @@ export interface NewMedicalOrderPayload {
   frequency: string;
   duration: string;
 }
+
+export interface DispenseMedicinePayload {
+  elderly_Id: number;
+  medicine_Id: number;
+  quantity: number;
+  bill_Id: string;
+  order_Id: number;
+  staff_Id: number;
+  settlement_Id: number;
+  payment_Method: string;
+  remarks: string;
+}
+
+// 文件来源: 药品库存API文档
+
+// 通用API响应格式
+export interface MedicalApiResponse<T> {
+  ok: boolean;
+  data: T;
+  message: string | null;
+}
+
+// 采购预警条目
+export interface MedicineProcurement {
+  procurement_id: number;
+  medicine_id: number;
+  purchase_quantity: number;
+  purchase_time: string; // ISO Date String
+  staff_id: number;
+  status: string;
+}
+
+// 采购药品（新增库存）时提交的数据
+export interface MedicineStockDto {
+  medicine_id: number;
+  batch_no: string;
+  expiration_date: string; // ISO Date String
+  cost_price: number;
+  sale_price: number;
+  quantity_in_stock: number;
+  minimum_stock_level: number;
+  location: string;
+  supplier: string;
+  is_active: number; // 0 or 1
+}
+
+// 聚合后的药品库存信息
+export interface AggregatedMedicineStock {
+  medicine_id: number;
+  total_quantity: number;
+  reserved_quantity: number;
+  available_quantity: number;
+  active_batches: number;
+}
+// 单个药品库存批次的详细信息
+export interface MedicineStockBatch {
+  stock_batch_id: number;
+  medicine_id: number;
+  batch_no: string;
+  expiration_date: string; // ISO Date String
+  cost_price: number;
+  sale_price: number;
+  quantity_in_stock: number;
+  reserved_quantity: number;
+  minimum_stock_level: number;
+  location: string;
+  supplier: string;
+  is_active: number; // 0 or 1
+  created_at: string; // ISO Date String
+  updated_at: string; // ISO Date String
+}
